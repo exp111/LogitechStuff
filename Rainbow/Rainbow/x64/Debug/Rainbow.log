@@ -1,0 +1,5 @@
+﻿  main.cpp
+d:\visual studio\logitech\myled\rainbow\rainbow\main.cpp(21): warning C4244: "Argument": Konvertierung von "float" in "int", möglicher Datenverlust
+d:\visual studio\logitech\myled\rainbow\rainbow\main.cpp(20): warning C4244: "Argument": Konvertierung von "float" in "int", möglicher Datenverlust
+d:\visual studio\logitech\myled\rainbow\rainbow\main.cpp(19): warning C4244: "Argument": Konvertierung von "float" in "int", möglicher Datenverlust
+  Rainbow.vcxproj -> D:\Visual Studio\Logitech\MyLED\Rainbow\x64\Debug\Rainbow.exe
