@@ -1,0 +1,95 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="include">
+      <UniqueIdentifier>{4da66770-a0bd-4484-8620-892da13efd53}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\teamlog">
+      <UniqueIdentifier>{d76dfa87-907d-4936-a5cf-59462dba95d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\teamspeak">
+      <UniqueIdentifier>{424f4ce9-e47e-43e3-91bc-85bbfec2c680}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ui">
+      <UniqueIdentifier>{f4935b73-2fbb-43d7-8b69-0da846b1e168}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}</UniqueIdentifier>
+      <Extensions>moc;h;cpp</Extensions>
+      <ParseFiles>true</ParseFiles>
+    </Filter>
+    <Filter Include="Form Files">
+      <UniqueIdentifier>{99349809-55BA-4b9d-BF79-8FDBB0286EB3}</UniqueIdentifier>
+      <Extensions>ui</Extensions>
+      <ParseFiles>true</ParseFiles>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="plugin.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\teamspeak\clientlib_publicdefinitions.h">
+      <Filter>include\teamspeak</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\teamspeak\public_definitions.h">
+      <Filter>include\teamspeak</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\teamspeak\public_errors.h">
+      <Filter>include\teamspeak</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\teamspeak\public_errors_rare.h">
+      <Filter>include\teamspeak</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\teamspeak\public_rare_definitions.h">
+      <Filter>include\teamspeak</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\teamlog\logtypes.h">
+      <Filter>include\teamlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\ts3_functions.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\plugin_definitions.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="config.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_QtConfig.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="plugin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="config.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="QtConfig.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_QtConfig.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_QtConfig.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="QtConfig.h">
+      <Filter>ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="QtConfig.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>
