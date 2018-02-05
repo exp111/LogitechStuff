@@ -16,7 +16,11 @@ int WinMain(HINSTANCE hInstance,
 	bool rainbowToggle = false;
 	float rainbowSpeed = 0.002f;
 
-	int type = LOGI_LCD_TYPE_MONO | LOGI_LCD_TYPE_COLOR;
+	double lastButtonPressed = 0;
+	const double buttonPressWaitTime = 0.1;
+
+	int type = LOGI_LCD_TYPE_COLOR;
+
 
 	//Init
 	LogiLcdInit(_wcsdup(L"RainbowLED"), type);
@@ -32,14 +36,23 @@ int WinMain(HINSTANCE hInstance,
 		LogiLcdColorSetText(7, _wcsdup(L"Cancel to quit"));
 
 		//Check Buttons
-		if (LogiLcdIsButtonPressed(LOGI_LCD_COLOR_BUTTON_OK))
+		if (LogiLcdIsButtonPressed(LOGI_LCD_COLOR_BUTTON_OK) && (GetEpochTime() - lastButtonPressed) > buttonPressWaitTime)
+		{
+			lastButtonPressed = GetEpochTime();
 			rainbowToggle = !rainbowToggle;
+		}
 
-		if (LogiLcdIsButtonPressed(LOGI_LCD_COLOR_BUTTON_LEFT))
+		if (LogiLcdIsButtonPressed(LOGI_LCD_COLOR_BUTTON_LEFT) && (GetEpochTime() - lastButtonPressed) > buttonPressWaitTime)
+		{
+			lastButtonPressed = GetEpochTime();
 			rainbowSpeed = 0.002f;
+		}
 
-		if (LogiLcdIsButtonPressed(LOGI_LCD_COLOR_BUTTON_RIGHT))
+		if (LogiLcdIsButtonPressed(LOGI_LCD_COLOR_BUTTON_RIGHT) && (GetEpochTime() - lastButtonPressed) > buttonPressWaitTime)
+		{
+			lastButtonPressed = GetEpochTime();
 			rainbowSpeed = 0.004f;
+		}
 
 		//Rainbow Toggle
 		if (rainbowToggle)
