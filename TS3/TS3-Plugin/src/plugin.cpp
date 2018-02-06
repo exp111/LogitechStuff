@@ -312,8 +312,8 @@ void Update()
 	for (unsigned i = config->pos; i < channelClientList.size() && i < config->pos + 7; i++)
 	{
 		char* clientName = new char[64];
-		ts3Functions.getClientDisplayName(serverConnectionHandlerID, channelClientList[i], clientName, 64);
-		std::string sClientName(clientName); //queries get faulty name
+		ts3Functions.getClientVariableAsString(serverConnectionHandlerID, channelClientList[i], CLIENT_NICKNAME, &clientName);
+		std::string sClientName(clientName);
 		LogiLcdColorSetText(i + 1 - config->pos, _wcsdup(std::wstring(sClientName.begin(), sClientName.end()).c_str()));
 	}
 
