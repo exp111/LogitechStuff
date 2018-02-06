@@ -279,13 +279,21 @@ void Update()
 	std::vector<anyID> channelClientList = GetChannelContent(serverConnectionHandlerID, channelID);
 
 	//Title (ex: TeamSpeak 3 - 3/15)
-	//unsigned channelClientCount = GetChannelContentCount(serverConnectionHandlerID, channelID);
+	int talking, inputMuted, outputMuted;
+	ts3Functions.getClientSelfVariableAsInt(serverConnectionHandlerID, CLIENT_FLAG_TALKING, &talking);
+	ts3Functions.getClientSelfVariableAsInt(serverConnectionHandlerID, CLIENT_INPUT_MUTED, &inputMuted);
+	ts3Functions.getClientSelfVariableAsInt(serverConnectionHandlerID, CLIENT_OUTPUT_MUTED, &outputMuted);
+
+	int red = talking ? 255 : outputMuted ? 160 : inputMuted ? 0 : 255;
+	int green = talking ? 0 : outputMuted ? 160 : inputMuted ? 0 : 255;
+	int blue = talking ? 0 : outputMuted ? 160 : inputMuted ? 204 : 255;
+
 	unsigned channelClientCount = channelClientList.size();
 	int serverClientCount = 0;
 	ts3Functions.requestServerVariables(serverConnectionHandlerID); //we need to request for client count
 	ts3Functions.getServerVariableAsInt(serverConnectionHandlerID, VIRTUALSERVER_CLIENTS_ONLINE, &serverClientCount);
 	std::string title = "TS3 - " + std::to_string(channelClientCount) + "/" + std::to_string(serverClientCount);
-	LogiLcdColorSetTitle(_wcsdup(std::wstring(title.begin(), title.end()).c_str()));
+	LogiLcdColorSetTitle(_wcsdup(std::wstring(title.begin(), title.end()).c_str()), red, green, blue);
 
 	//ServerName (ex: MaCoGa - Dj's Kotstube)
 	char* serverName = new char[128];
@@ -309,12 +317,35 @@ void Update()
 		config->pos = 0; //Better reset it if I fucked up
 
 	//Clients	//start at pos ; go till we hit the limit (no more clients/no more space)
+	//int position = 0;
 	for (unsigned i = config->pos; i < channelClientList.size() && i < config->pos + 7; i++)
 	{
+		//if (channelClientList[i] == clientID) //TODO
+		//	continue;
+		//position++;
 		char* clientName = new char[64];
+		int talking, inputMuted, outputMuted;
 		ts3Functions.getClientVariableAsString(serverConnectionHandlerID, channelClientList[i], CLIENT_NICKNAME, &clientName);
-		std::string sClientName(clientName);
-		LogiLcdColorSetText(i + 1 - config->pos, _wcsdup(std::wstring(sClientName.begin(), sClientName.end()).c_str()));
+
+		if (channelClientList[i] == clientID)
+		{
+			ts3Functions.getClientSelfVariableAsInt(serverConnectionHandlerID, CLIENT_FLAG_TALKING, &talking);
+			ts3Functions.getClientSelfVariableAsInt(serverConnectionHandlerID, CLIENT_INPUT_MUTED, &inputMuted);
+			ts3Functions.getClientSelfVariableAsInt(serverConnectionHandlerID, CLIENT_OUTPUT_MUTED, &outputMuted);
+		}
+		else
+		{
+			ts3Functions.getClientVariableAsInt(serverConnectionHandlerID, channelClientList[i], CLIENT_FLAG_TALKING, &talking);
+			ts3Functions.getClientVariableAsInt(serverConnectionHandlerID, channelClientList[i], CLIENT_INPUT_MUTED, &inputMuted);
+			ts3Functions.getClientVariableAsInt(serverConnectionHandlerID, channelClientList[i], CLIENT_OUTPUT_MUTED, &outputMuted);
+		}
+
+		int red = talking ? 255 : outputMuted ? 160 : inputMuted ? 0 : 255;
+		int green = talking ? 0 : outputMuted ? 160 : inputMuted ? 0 : 255;
+		int blue = talking ? 0 : outputMuted ? 160 : inputMuted ? 204 : 255;
+		//std::string status = inputMuted && outputMuted ? "<IO> " : inputMuted ? "<I> " : outputMuted ? "<O> " : "";
+		std::string text = std::string(clientName);
+		LogiLcdColorSetText(i + 1 - config->pos, _wcsdup(std::wstring(text.begin(), text.end()).c_str()), red, green, blue);
 	}
 
 	for (unsigned i = channelClientList.size(); i < 7; i++) //Empty the other lines
@@ -383,6 +414,16 @@ void ts3plugin_onConnectStatusChangeEvent(uint64 serverConnectionHandlerID, int 
 }
 
 void ts3plugin_onClientMoveEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, const char * moveMessage)
+{
+	Update();
+}
+
+void ts3plugin_onTalkStatusChangeEvent(uint64 serverConnectionHandlerID, int status, int isReceivedWhisper, anyID clientID)
+{
+	Update();
+}
+
+void ts3plugin_onUpdateClientEvent(uint64 serverConnectionHandlerID, anyID clientID, anyID invokerID, const char* invokerName, const char* invokerUniqueIdentifier)
 {
 	Update();
 }
