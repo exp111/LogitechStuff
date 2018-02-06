@@ -188,8 +188,8 @@ enum {
 void ts3plugin_initMenus(struct PluginMenuItem*** menuItems, char** menuIcon) {
 
 	BEGIN_CREATE_MENUS(MENU_ID_MAX - 1); //Needs to be correct
-	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, MENU_ID_GLOBAL_1, "Item 1", "");
-	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, MENU_ID_GLOBAL_2, "Item 2", "");
+	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, MENU_ID_GLOBAL_1, "Print Test Bool", "");
+	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, MENU_ID_GLOBAL_2, "Force Update", "");
 	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, MENU_ID_GLOBAL_3, "Item 3", "");
 	END_CREATE_MENUS;
 
@@ -197,15 +197,91 @@ void ts3plugin_initMenus(struct PluginMenuItem*** menuItems, char** menuIcon) {
 	_strcpy(*menuIcon, PLUGIN_MENU_BUFSZ, ""); //PLUGIN MENU IMAGE
 }
 
+bool isClientInList(anyID* clientList, anyID* clientID) 
+{
+	for (int i = 0; clientList[i]; i++)
+	{
+		if (clientList[i] == *clientID) 
+			return true;
+	}
+
+	return false;
+}
+
+std::vector<anyID> GetChannelContent(uint64 serverConnectionHandlerID, uint64 channelID)
+{
+	std::vector<anyID> channelClientVector = { };
+
+	anyID* channelClientList;
+	ts3Functions.getChannelClientList(serverConnectionHandlerID, channelID, &channelClientList);
+
+	anyID* clientList;
+	ts3Functions.getClientList(serverConnectionHandlerID, &clientList);
+
+	int clientType;
+	for (int i = 0; clientList[i]; i++)
+	{
+		if (ts3Functions.getClientVariableAsInt(serverConnectionHandlerID, clientList[i], CLIENT_TYPE, &clientType) != ERROR_ok)
+			continue;
+
+		//if (clientType == 1) //Query
+		//	continue;
+
+		if (clientType != 1 && !isClientInList(channelClientList, &clientList[i]))
+			continue;
+
+		channelClientVector.push_back(clientList[i]);
+	}
+
+	return channelClientVector;
+}
+
+unsigned GetChannelContentCount(uint64 serverConnectionHandlerID, uint64 channelID)
+{
+	unsigned count = 0;
+
+	anyID* channelClientList;
+	ts3Functions.getChannelClientList(serverConnectionHandlerID, channelID, &channelClientList);
+
+	anyID* clientList;
+	ts3Functions.getClientList(serverConnectionHandlerID, &clientList);
+
+	int clientType;
+	for (int i = 0; clientList[i]; i++)
+	{
+		if (ts3Functions.getClientVariableAsInt(serverConnectionHandlerID, clientList[i], CLIENT_TYPE, &clientType) != ERROR_ok)
+			continue;
+
+		if (clientType == 1) //Query
+			continue;
+
+		if (!isClientInList(channelClientList, &clientList[i]))
+			continue;
+
+		count++;
+	}
+
+	return count;
+}
+
 void Update()
 {
 	std::wstring serverChannelNames = L"";
 	char* name = new char[512];
 	uint64 serverConnectionHandlerID = ts3Functions.getCurrentServerConnectionHandlerID();
-	anyID clientID;
+	anyID clientID = 0;
+	uint64 channelID = 0;
 	ts3Functions.getClientID(serverConnectionHandlerID, &clientID);
-	//Title
-	LogiLcdColorSetTitle(_wcsdup(L"TeamSpeak 3"));
+	ts3Functions.getChannelOfClient(serverConnectionHandlerID, clientID, &channelID);
+
+	//Title (ex: TeamSpeak 3 - 3/15)
+	unsigned channelClientCount = GetChannelContentCount(serverConnectionHandlerID, channelID);
+	int serverClientCount = 0;
+	ts3Functions.requestServerVariables(serverConnectionHandlerID); //we need to request for client count
+	ts3Functions.getServerVariableAsInt(serverConnectionHandlerID, VIRTUALSERVER_CLIENTS_ONLINE, &serverClientCount);
+	std::string title = "TS3 - " + std::to_string(channelClientCount) + "/" + std::to_string(serverClientCount);
+	LogiLcdColorSetTitle(_wcsdup(std::wstring(title.begin(), title.end()).c_str()));
+
 	//ServerName
 	ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_NAME, &name);
 	std::string nameS{ name }; //Maybe truncate server name?
@@ -225,6 +301,7 @@ void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenu
 			ts3Functions.printMessageToCurrentTab(std::to_string(config->testBool).c_str());
 			break;
 		case MENU_ID_GLOBAL_2:
+			Update();
 			break;
 		case MENU_ID_GLOBAL_3:
 			break;
@@ -238,6 +315,11 @@ void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenu
 }
 
 void ts3plugin_onConnectStatusChangeEvent(uint64 serverConnectionHandlerID, int newStatus, unsigned int errorNumber)
+{
+	Update();
+}
+
+void ts3plugin_onClientMoveEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, const char * moveMessage)
 {
 	Update();
 }
