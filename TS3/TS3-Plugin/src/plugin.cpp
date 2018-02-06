@@ -71,7 +71,7 @@ const char* ts3plugin_name() {
 	static char* result = NULL;  /* Static variable so it's allocated only once */
 	if (!result) {
 		const wchar_t* name = L"Logitech G19 Plugin";
-		if (wcharToUtf8(name, &result) == -1) {  /* Convert name into UTF-8 encoded result */
+		if (wcharToUtf8(name, &result) == -1) {  /* Convert serverName into UTF-8 encoded result */
 			result = "Logitech G19 Plugin";  /* Conversion failed, fallback here */
 		}
 	}
@@ -226,8 +226,8 @@ std::vector<anyID> GetChannelContent(uint64 serverConnectionHandlerID, uint64 ch
 		if (ts3Functions.getClientVariableAsInt(serverConnectionHandlerID, clientList[i], CLIENT_TYPE, &clientType) != ERROR_ok)
 			continue;
 
-		if (clientType == 1) //Query
-			continue;
+		//if (clientType == 1) //Query
+		//	continue;
 
 		if (!isClientInList(channelClientList, &clientList[i]))
 			continue;
@@ -269,7 +269,7 @@ unsigned GetChannelContentCount(uint64 serverConnectionHandlerID, uint64 channel
 void Update()
 {
 	std::wstring serverChannelNames = L"";
-	char* name = new char[512];
+	char* serverName = new char[512];
 	uint64 serverConnectionHandlerID = ts3Functions.getCurrentServerConnectionHandlerID();
 	anyID clientID = 0;
 	uint64 channelID = 0;
@@ -287,20 +287,25 @@ void Update()
 	std::string title = "TS3 - " + std::to_string(channelClientCount) + "/" + std::to_string(serverClientCount);
 	LogiLcdColorSetTitle(_wcsdup(std::wstring(title.begin(), title.end()).c_str()));
 
-	//ServerName
-	ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_NAME, &name);
-	std::string nameS{ name }; //Maybe truncate server name?
-	serverChannelNames += std::wstring(nameS.begin(), nameS.end()) + L" - ";
+	//ServerName (ex: MaCoGa - Dj's Kotstube)
+	ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_NAME, &serverName);
+	std::string sServerName{ serverName }; //Maybe truncate server serverName?
+	serverChannelNames += std::wstring(sServerName.begin(), sServerName.end()) + L" - ";
 	LogiLcdColorSetText(0, _wcsdup(serverChannelNames.c_str()));
 
 	//Clients
-	/*for (unsigned i = 0; i < channelClientList.size() && i < 7; i++)
+	for (unsigned i = 0; i < channelClientList.size() && i < 7; i++)
 	{
-		char* clientName = new char[128];
-		ts3Functions.getClientDisplayName(serverConnectionHandlerID, channelClientList[i], clientName, 128);
-		std::string sClientName(clientName);
+		char* clientName = new char[64];
+		ts3Functions.getClientDisplayName(serverConnectionHandlerID, channelClientList[i], clientName, 64);
+		std::string sClientName(clientName); //queries get faulty name
 		LogiLcdColorSetText(i + 1, _wcsdup(std::wstring(sClientName.begin(), sClientName.end()).c_str()));
-	}*/
+	}
+
+	for (unsigned i = channelClientList.size(); i < 7; i++) //Empty the other lines
+	{
+		LogiLcdColorSetText(i + 1, _wcsdup(L""));
+	}
 
 	//Refresh Screen
 	LogiLcdUpdate();
