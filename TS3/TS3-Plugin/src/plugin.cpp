@@ -182,6 +182,7 @@ enum {
 	MENU_ID_GLOBAL_1 = 1,
 	MENU_ID_GLOBAL_2,
 	MENU_ID_GLOBAL_3,
+	MENU_ID_GLOBAL_4,
 	MENU_ID_MAX
 };
 
@@ -190,7 +191,8 @@ void ts3plugin_initMenus(struct PluginMenuItem*** menuItems, char** menuIcon) {
 	BEGIN_CREATE_MENUS(MENU_ID_MAX - 1); //Needs to be correct
 	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, MENU_ID_GLOBAL_1, "Print Test Bool", "");
 	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, MENU_ID_GLOBAL_2, "Force Update", "");
-	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, MENU_ID_GLOBAL_3, "Item 3", "");
+	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, MENU_ID_GLOBAL_3, "Pos -1", "");
+	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, MENU_ID_GLOBAL_4, "Pos +1", "");
 	END_CREATE_MENUS;
 
 	*menuIcon = (char*)malloc(PLUGIN_MENU_BUFSZ * sizeof(char));
@@ -268,8 +270,6 @@ unsigned GetChannelContentCount(uint64 serverConnectionHandlerID, uint64 channel
 
 void Update()
 {
-	std::wstring serverChannelNames = L"";
-	char* serverName = new char[512];
 	uint64 serverConnectionHandlerID = ts3Functions.getCurrentServerConnectionHandlerID();
 	anyID clientID = 0;
 	uint64 channelID = 0;
@@ -288,18 +288,33 @@ void Update()
 	LogiLcdColorSetTitle(_wcsdup(std::wstring(title.begin(), title.end()).c_str()));
 
 	//ServerName (ex: MaCoGa - Dj's Kotstube)
+	char* serverName = new char[128];
+	char* channelName = new char[128];
+	std::wstring serverChannelNames = L"";
 	ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_NAME, &serverName);
-	std::string sServerName{ serverName }; //Maybe truncate server serverName?
-	serverChannelNames += std::wstring(sServerName.begin(), sServerName.end()) + L" - ";
+	ts3Functions.getChannelVariableAsString(serverConnectionHandlerID, channelID, CHANNEL_NAME, &channelName);
+	std::string sServerName{ serverName };
+	if (sServerName.size() > 13) //30 is the maximum so resize it to have the '-' in the middle
+		sServerName.resize(13);
+	std::string sChannelName{ channelName };
+	serverChannelNames += std::wstring(sServerName.begin(), sServerName.end()) + L" - " + std::wstring(sChannelName.begin(), sChannelName.end());
 	LogiLcdColorSetText(0, _wcsdup(serverChannelNames.c_str()));
 
-	//Clients
-	for (unsigned i = 0; i < channelClientList.size() && i < 7; i++)
+	if (channelClientList.size() - config->pos < 7) //if people have left and we have space move the pos so the screen is full
+	{
+		config->pos -= (7 - (channelClientList.size() - config->pos));
+	}
+
+	if (config->pos > channelClientList.size())
+		config->pos = 0; //Better reset it if I fucked up
+
+	//Clients	//start at pos ; go till we hit the limit (no more clients/no more space)
+	for (unsigned i = config->pos; i < channelClientList.size() && i < config->pos + 7; i++)
 	{
 		char* clientName = new char[64];
 		ts3Functions.getClientDisplayName(serverConnectionHandlerID, channelClientList[i], clientName, 64);
 		std::string sClientName(clientName); //queries get faulty name
-		LogiLcdColorSetText(i + 1, _wcsdup(std::wstring(sClientName.begin(), sClientName.end()).c_str()));
+		LogiLcdColorSetText(i + 1 - config->pos, _wcsdup(std::wstring(sClientName.begin(), sClientName.end()).c_str()));
 	}
 
 	for (unsigned i = channelClientList.size(); i < 7; i++) //Empty the other lines
@@ -309,6 +324,29 @@ void Update()
 
 	//Refresh Screen
 	LogiLcdUpdate();
+}
+
+void ChangePosition(int changeValue)
+{
+	int changed = config->pos + changeValue;
+	if (changed < 0)
+		return;
+
+	uint64 serverConnectionHandlerID = ts3Functions.getCurrentServerConnectionHandlerID();
+	anyID clientID = 0;
+	uint64 channelID = 0;
+	ts3Functions.getClientID(serverConnectionHandlerID, &clientID);
+	ts3Functions.getChannelOfClient(serverConnectionHandlerID, clientID, &channelID);
+
+	std::vector<anyID> channelClientList = GetChannelContent(serverConnectionHandlerID, channelID);
+
+	if (channelClientList.size() - changed <= 7) //if we have less than 7 people no need to change the pos
+		return;
+
+	config->pos = changed;
+
+	//Refresh
+	Update();
 }
 
 /************************** TeamSpeak callbacks ***************************/
@@ -325,6 +363,10 @@ void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenu
 			Update();
 			break;
 		case MENU_ID_GLOBAL_3:
+			ChangePosition(-1);
+			break;
+		case MENU_ID_GLOBAL_4:
+			ChangePosition(1);
 			break;
 		default:
 			break;
