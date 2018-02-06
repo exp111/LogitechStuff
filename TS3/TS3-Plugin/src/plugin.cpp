@@ -201,6 +201,7 @@ bool isClientInList(anyID* clientList, anyID* clientID)
 {
 	for (int i = 0; clientList[i]; i++)
 	{
+		//ts3Functions.printMessageToCurrentTab(std::string(std::to_string(clientList[i]) + ";" +std::to_string(*clientID) + "\n").c_str());
 		if (clientList[i] == *clientID) 
 			return true;
 	}
@@ -210,13 +211,14 @@ bool isClientInList(anyID* clientList, anyID* clientID)
 
 std::vector<anyID> GetChannelContent(uint64 serverConnectionHandlerID, uint64 channelID)
 {
-	std::vector<anyID> channelClientVector = { };
+	std::vector<anyID> channelClientVector = std::vector<anyID>();
 
 	anyID* channelClientList;
 	ts3Functions.getChannelClientList(serverConnectionHandlerID, channelID, &channelClientList);
 
 	anyID* clientList;
-	ts3Functions.getClientList(serverConnectionHandlerID, &clientList);
+	if (ts3Functions.getClientList(serverConnectionHandlerID, &clientList) != ERROR_ok)
+		return channelClientVector;
 
 	int clientType;
 	for (int i = 0; clientList[i]; i++)
@@ -224,10 +226,10 @@ std::vector<anyID> GetChannelContent(uint64 serverConnectionHandlerID, uint64 ch
 		if (ts3Functions.getClientVariableAsInt(serverConnectionHandlerID, clientList[i], CLIENT_TYPE, &clientType) != ERROR_ok)
 			continue;
 
-		//if (clientType == 1) //Query
-		//	continue;
+		if (clientType == 1) //Query
+			continue;
 
-		if (clientType != 1 && !isClientInList(channelClientList, &clientList[i]))
+		if (!isClientInList(channelClientList, &clientList[i]))
 			continue;
 
 		channelClientVector.push_back(clientList[i]);
@@ -252,8 +254,8 @@ unsigned GetChannelContentCount(uint64 serverConnectionHandlerID, uint64 channel
 		if (ts3Functions.getClientVariableAsInt(serverConnectionHandlerID, clientList[i], CLIENT_TYPE, &clientType) != ERROR_ok)
 			continue;
 
-		if (clientType == 1) //Query
-			continue;
+		//if (clientType == 1) //Query
+		//	continue;
 
 		if (!isClientInList(channelClientList, &clientList[i]))
 			continue;
@@ -274,8 +276,11 @@ void Update()
 	ts3Functions.getClientID(serverConnectionHandlerID, &clientID);
 	ts3Functions.getChannelOfClient(serverConnectionHandlerID, clientID, &channelID);
 
+	std::vector<anyID> channelClientList = GetChannelContent(serverConnectionHandlerID, channelID);
+
 	//Title (ex: TeamSpeak 3 - 3/15)
-	unsigned channelClientCount = GetChannelContentCount(serverConnectionHandlerID, channelID);
+	//unsigned channelClientCount = GetChannelContentCount(serverConnectionHandlerID, channelID);
+	unsigned channelClientCount = channelClientList.size();
 	int serverClientCount = 0;
 	ts3Functions.requestServerVariables(serverConnectionHandlerID); //we need to request for client count
 	ts3Functions.getServerVariableAsInt(serverConnectionHandlerID, VIRTUALSERVER_CLIENTS_ONLINE, &serverClientCount);
@@ -287,6 +292,17 @@ void Update()
 	std::string nameS{ name }; //Maybe truncate server name?
 	serverChannelNames += std::wstring(nameS.begin(), nameS.end()) + L" - ";
 	LogiLcdColorSetText(0, _wcsdup(serverChannelNames.c_str()));
+
+	//Clients
+	/*for (unsigned i = 0; i < channelClientList.size() && i < 7; i++)
+	{
+		char* clientName = new char[128];
+		ts3Functions.getClientDisplayName(serverConnectionHandlerID, channelClientList[i], clientName, 128);
+		std::string sClientName(clientName);
+		LogiLcdColorSetText(i + 1, _wcsdup(std::wstring(sClientName.begin(), sClientName.end()).c_str()));
+	}*/
+
+	//Refresh Screen
 	LogiLcdUpdate();
 }
 
