@@ -227,6 +227,41 @@ void ts3plugin_onClientMoveEvent(uint64 serverConnectionHandlerID, anyID clientI
 	screen->Update();
 }
 
+void ts3plugin_onClientMoveSubscriptionEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility)
+{
+	screen->Update();
+}
+
+void ts3plugin_onTalkStatusChangeEvent(uint64 serverConnectionHandlerID, int status, int isReceivedWhisper, anyID clientID)
+{
+	screen->Update();
+}
+
+void ts3plugin_onUpdateClientEvent(uint64 serverConnectionHandlerID, anyID clientID, anyID invokerID, const char* invokerName, const char* invokerUniqueIdentifier)
+{
+	screen->Update();
+}
+
+void ts3plugin_onClientMoveTimeoutEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, const char * timeoutMessage)
+{
+	screen->Update();
+}
+
+void ts3plugin_onClientMoveMovedEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, anyID moverID, const char * moverName, const char * moverUniqueIdentifier, const char * moveMessage)
+{
+	screen->Update();
+}
+
+void ts3plugin_onClientKickFromChannelEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, anyID kickerID, const char * kickerName, const char * kickerUniqueIdentifier, const char * kickMessage)
+{
+	screen->Update();
+}
+
+void ts3plugin_onClientKickFromServerEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, anyID kickerID, const char * kickerName, const char * kickerUniqueIdentifier, const char * kickMessage)
+{
+	screen->Update();
+}
+
 int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetMode, anyID toID, anyID fromID, const char * fromName, const char * fromUniqueIdentifier, const char * message, int ffIgnored)
 {
 	anyID mClientID;
@@ -234,7 +269,7 @@ int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetM
 	if (mClientID != fromID) //Don't show messages from yourself
 	{
 		//Set message as newest message
-		screen->AddMessage(message, fromID);
+		screen->AddMessage(message, fromID, fromName);
 	}
 	return 0;
 }
@@ -246,19 +281,9 @@ int ts3plugin_onClientPokeEvent(uint64 serverConnectionHandlerID, anyID fromClie
 	if (mClientID != fromClientID) //Don't show messages from yourself; if you poke yourself ._.
 	{
 		//Set message as newest message
-		screen->AddMessage(message, fromClientID);
+		screen->AddMessage(message, fromClientID, pokerName);
 	}
 	return 0;
-}
-
-void ts3plugin_onTalkStatusChangeEvent(uint64 serverConnectionHandlerID, int status, int isReceivedWhisper, anyID clientID)
-{
-	screen->Update();
-}
-
-void ts3plugin_onUpdateClientEvent(uint64 serverConnectionHandlerID, anyID clientID, anyID invokerID, const char* invokerName, const char* invokerUniqueIdentifier)
-{
-	screen->Update();
 }
 
 const char* ts3plugin_keyDeviceName(const char* keyIdentifier) {
