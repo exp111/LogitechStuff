@@ -22,6 +22,12 @@ public:
 
 extern Config* config;
 
+enum LCD_MODES
+{
+	NORMAL = 0,
+	MENU = 1,
+	CHANNELS = 2
+};
 
 class LCDScreen
 {
@@ -29,10 +35,12 @@ private:
 	bool gotMessage = false;
 	std::string newestMessage = "";
 	anyID messageSender = 0;
+
 	bool isActive = false;
 	unsigned cursorPosition = 0;
 	HANDLE controlThread = 0;
 	struct TS3Functions ts3Functions;
+	int currentMode = NORMAL;
 
 public:
 	LCDScreen() {};
@@ -46,6 +54,7 @@ public:
 	void Shutdown();
 
 	void AddMessage(const char* msg, anyID sender);
+	void RemoveMessage();
 
 	unsigned GetPosition() const;
 	void ChangePosition(int changeValue);
@@ -57,6 +66,16 @@ public:
 	void Update();
 
 	void StartControlThread(); //Check controls in another thread
+
+	//Button Events
+	void ButtonUpEvent();
+	void ButtonDownEvent();
+
+	void ButtonLeftEvent();
+	void ButtonRightEvent();
+
+	void ButtonOKEvent();
+
 
 	//Helper
 	bool isClientInList(anyID* clientList, anyID* clientID);

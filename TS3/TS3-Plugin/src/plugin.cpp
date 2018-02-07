@@ -239,10 +239,25 @@ void ts3plugin_onClientMoveEvent(uint64 serverConnectionHandlerID, anyID clientI
 
 int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetMode, anyID toID, anyID fromID, const char * fromName, const char * fromUniqueIdentifier, const char * message, int ffIgnored)
 {
-	//Set message as newest message
-	screen->AddMessage(message, fromID);
-	//Update
-	screen->Update();
+	anyID mClientID;
+	ts3Functions.getClientID(serverConnectionHandlerID, &mClientID);
+	if (mClientID != fromID) //Don't show messages from yourself
+	{
+		//Set message as newest message
+		screen->AddMessage(message, fromID);
+	}
+	return 0;
+}
+
+int ts3plugin_onClientPokeEvent(uint64 serverConnectionHandlerID, anyID fromClientID, const char* pokerName, const char* pokerUniqueIdentity, const char* message, int ffIgnored)
+{
+	anyID mClientID;
+	ts3Functions.getClientID(serverConnectionHandlerID, &mClientID);
+	if (mClientID != fromClientID) //Don't show messages from yourself; if you poke yourself ._.
+	{
+		//Set message as newest message
+		screen->AddMessage(message, fromClientID);
+	}
 	return 0;
 }
 

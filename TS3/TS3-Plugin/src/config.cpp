@@ -10,6 +10,22 @@ void LCDScreen::AddMessage(const char * msg, anyID sender)
 	gotMessage = true;
 	newestMessage = std::string(msg);
 	messageSender = sender;
+
+	//Refresh
+	Update();
+}
+
+void LCDScreen::RemoveMessage()
+{
+	if (gotMessage)
+	{
+		newestMessage = "";
+		messageSender = 0;
+		gotMessage = false;
+	}
+
+	//Refresh
+	Update();
 }
 
 void LCDScreen::ChangePosition(int changeValue)
@@ -40,11 +56,17 @@ DWORD WINAPI ControlThread(void * data)
 	while (screen->IsActive())
 	{
 		if (LogiLcdIsButtonPressed(LOGI_LCD_COLOR_BUTTON_UP))
-			screen->ChangePosition(-1);
+			screen->ButtonUpEvent();
 		else if (LogiLcdIsButtonPressed(LOGI_LCD_COLOR_BUTTON_DOWN))
-			screen->ChangePosition(1);
+			screen->ButtonDownEvent();
+		else if (LogiLcdIsButtonPressed(LOGI_LCD_COLOR_BUTTON_LEFT))
+			screen->ButtonLeftEvent();
+		else if (LogiLcdIsButtonPressed(LOGI_LCD_COLOR_BUTTON_RIGHT))
+			screen->ButtonRightEvent();
+		else if (LogiLcdIsButtonPressed(LOGI_LCD_COLOR_BUTTON_OK))
+			screen->ButtonOKEvent();
 
-		Sleep(100);
+		Sleep(150);
 	}
 
 	return 0;
@@ -53,6 +75,54 @@ DWORD WINAPI ControlThread(void * data)
 void LCDScreen::StartControlThread()
 {
 	controlThread = CreateThread(NULL, 0, ControlThread, NULL, 0, NULL);
+}
+
+void LCDScreen::ButtonUpEvent()
+{
+	if (currentMode == NORMAL)
+		ChangePosition(-1);
+}
+
+void LCDScreen::ButtonDownEvent()
+{
+	if (currentMode == NORMAL)
+		ChangePosition(1);
+}
+
+void LCDScreen::ButtonLeftEvent()
+{
+	if (currentMode == NORMAL)
+	{
+		uint64 serverConnectionHandlerID = ts3Functions.getCurrentServerConnectionHandlerID();
+		int inputMuted;
+		if (ts3Functions.getClientSelfVariableAsInt(serverConnectionHandlerID, CLIENT_INPUT_MUTED, &inputMuted) == ERROR_ok)
+		{
+			ts3Functions.setClientSelfVariableAsInt(serverConnectionHandlerID, CLIENT_INPUT_MUTED, !inputMuted);
+			ts3Functions.flushClientSelfUpdates(serverConnectionHandlerID, NULL); //send update to server
+		}
+	}
+}
+
+void LCDScreen::ButtonRightEvent()
+{
+	if (currentMode == NORMAL)
+	{
+		uint64 serverConnectionHandlerID = ts3Functions.getCurrentServerConnectionHandlerID();
+		int outputMuted;
+		if (ts3Functions.getClientSelfVariableAsInt(serverConnectionHandlerID, CLIENT_OUTPUT_MUTED, &outputMuted) == ERROR_ok)
+		{
+			ts3Functions.setClientSelfVariableAsInt(serverConnectionHandlerID, CLIENT_OUTPUT_MUTED, !outputMuted);
+			ts3Functions.flushClientSelfUpdates(serverConnectionHandlerID, NULL); //send update to server
+		}
+	}
+}
+
+void LCDScreen::ButtonOKEvent()
+{
+	if (currentMode == NORMAL)
+	{
+		RemoveMessage();
+	}
 }
 
 void LCDScreen::Init()
@@ -97,25 +167,42 @@ void LCDScreen::Update()
 	int green = talking ? 0 : outputMuted ? 160 : inputMuted ? 0 : 255;
 	int blue = talking ? 0 : outputMuted ? 160 : inputMuted ? 204 : 255;
 
-	unsigned channelClientCount = channelClientList.size();
-	int serverClientCount = 0;
-	ts3Functions.requestServerVariables(serverConnectionHandlerID); //we need to request for client count
-	ts3Functions.getServerVariableAsInt(serverConnectionHandlerID, VIRTUALSERVER_CLIENTS_ONLINE, &serverClientCount);
-	std::string title = "TS3 - " + std::to_string(channelClientCount) + "/" + std::to_string(serverClientCount);
+	std::string title;
+	if (gotMessage)
+	{
+		char* messageSenderName = new char[64];
+		ts3Functions.getClientVariableAsString(serverConnectionHandlerID, messageSender, CLIENT_NICKNAME, &messageSenderName);
+		title = "From: " + std::string(messageSenderName);
+	}
+	else
+	{
+		unsigned channelClientCount = channelClientList.size();
+		int serverClientCount = 0;
+		ts3Functions.requestServerVariables(serverConnectionHandlerID); //we need to request for client count
+		ts3Functions.getServerVariableAsInt(serverConnectionHandlerID, VIRTUALSERVER_CLIENTS_ONLINE, &serverClientCount);
+		title = "TS3 - " + std::to_string(channelClientCount) + "/" + std::to_string(serverClientCount);
+	}
 	LogiLcdColorSetTitle(_wcsdup(std::wstring(title.begin(), title.end()).c_str()), red, green, blue);
 
 	//ServerName (ex: MaCoGa - Dj's Kotstube)
-	char* serverName = new char[128];
-	char* channelName = new char[128];
-	std::wstring serverChannelNames = L"";
-	ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_NAME, &serverName);
-	ts3Functions.getChannelVariableAsString(serverConnectionHandlerID, channelID, CHANNEL_NAME, &channelName);
-	std::string sServerName{ serverName };
-	if (sServerName.size() > 13) //30 is the maximum so resize it to have the '-' in the middle
-		sServerName.resize(13);
-	std::string sChannelName{ channelName };
-	serverChannelNames += std::wstring(sServerName.begin(), sServerName.end()) + L" - " + std::wstring(sChannelName.begin(), sChannelName.end());
-	LogiLcdColorSetText(0, _wcsdup(serverChannelNames.c_str()));
+	std::string fLineText = "";
+	if (gotMessage)
+	{
+		fLineText += newestMessage;
+	}
+	else
+	{
+		char* serverName = new char[128];
+		char* channelName = new char[128];
+		ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_NAME, &serverName);
+		ts3Functions.getChannelVariableAsString(serverConnectionHandlerID, channelID, CHANNEL_NAME, &channelName);
+		std::string sServerName{ serverName };
+		if (sServerName.size() > 13) //30 is the maximum so resize it to have the '-' in the middle
+			sServerName.resize(13);
+		std::string sChannelName{ channelName };
+		fLineText += sServerName + " - " + sChannelName;
+	}
+	LogiLcdColorSetText(0, _wcsdup(std::wstring(fLineText.begin(), fLineText.end()).c_str()));
 
 	if (channelClientList.size() - config->pos < 7) //if people have left and we have space move the pos so the screen is full
 	{
