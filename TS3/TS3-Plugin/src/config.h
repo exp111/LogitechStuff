@@ -51,9 +51,10 @@ private:
 		MUTE_OUTPUT = 1,
 		SWITCH_CHANNEL,
 		ADMIN_MENU,
+		HELP,
 		MAX_MENU_ITEMS
 	};
-	const std::vector<std::string> menuItems = { "Mute Input", "Mute Output", "Switch Channel", "Admin Menu" };
+	const std::vector<std::string> menuItems = { "Mute Input", "Mute Output", "Switch Channel", "Admin Menu (WIP)", "Help" };
 	unsigned menuCursorPosition = 0;
 
 	uint64 selectedChannel = 0;

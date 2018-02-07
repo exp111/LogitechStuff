@@ -92,6 +92,10 @@ void LCDScreen::SelectActiveItem()
 		currentMode = ADMIN;
 		Update();
 		break;
+	case HELP:
+		currentMode = HELP;
+		Update();
+		break;
 	default:
 		break;
 	}
@@ -288,6 +292,9 @@ void LCDScreen::ButtonMenuEvent()
 		lastMode = currentMode;
 		currentMode = MENU;
 		break;
+	case HELP:
+		lastMode = currentMode;
+		currentMode = MENU;
 	default:
 		break;
 	}
@@ -353,6 +360,16 @@ void LCDScreen::Update()
 {
 	uint64 serverConnectionHandlerID = ts3Functions.getCurrentServerConnectionHandlerID();
 
+	//Talking & Muted Status + title bar colors
+	int talking, inputMuted, outputMuted;
+	ts3Functions.getClientSelfVariableAsInt(serverConnectionHandlerID, CLIENT_FLAG_TALKING, &talking);
+	ts3Functions.getClientSelfVariableAsInt(serverConnectionHandlerID, CLIENT_INPUT_MUTED, &inputMuted);
+	ts3Functions.getClientSelfVariableAsInt(serverConnectionHandlerID, CLIENT_OUTPUT_MUTED, &outputMuted);
+
+	int red = talking ? 255 : outputMuted ? 160 : inputMuted ? 0 : 255;
+	int green = talking ? 0 : outputMuted ? 160 : inputMuted ? 0 : 255;
+	int blue = talking ? 0 : outputMuted ? 160 : inputMuted ? 204 : 255;
+
 	switch (currentMode)
 	{
 	case NORMAL:
@@ -365,15 +382,6 @@ void LCDScreen::Update()
 		std::vector<anyID> channelClientList = GetChannelContent(serverConnectionHandlerID, channelID);
 
 		//Title (ex: TeamSpeak 3 - 3/15)
-		int talking, inputMuted, outputMuted;
-		ts3Functions.getClientSelfVariableAsInt(serverConnectionHandlerID, CLIENT_FLAG_TALKING, &talking);
-		ts3Functions.getClientSelfVariableAsInt(serverConnectionHandlerID, CLIENT_INPUT_MUTED, &inputMuted);
-		ts3Functions.getClientSelfVariableAsInt(serverConnectionHandlerID, CLIENT_OUTPUT_MUTED, &outputMuted);
-
-		int red = talking ? 255 : outputMuted ? 160 : inputMuted ? 0 : 255;
-		int green = talking ? 0 : outputMuted ? 160 : inputMuted ? 0 : 255;
-		int blue = talking ? 0 : outputMuted ? 160 : inputMuted ? 204 : 255;
-
 		std::string title;
 		if (gotMessage)
 		{
@@ -429,7 +437,7 @@ void LCDScreen::Update()
 			//	continue;
 			//position++;
 			char* clientName = new char[64];
-			int talking, inputMuted, outputMuted;
+			int talking, inputMuted, outputMuted, clientType = 0;
 			ts3Functions.getClientVariableAsString(serverConnectionHandlerID, channelClientList[i], CLIENT_NICKNAME, &clientName);
 
 			if (channelClientList[i] == clientID)
@@ -443,11 +451,12 @@ void LCDScreen::Update()
 				ts3Functions.getClientVariableAsInt(serverConnectionHandlerID, channelClientList[i], CLIENT_FLAG_TALKING, &talking);
 				ts3Functions.getClientVariableAsInt(serverConnectionHandlerID, channelClientList[i], CLIENT_INPUT_MUTED, &inputMuted);
 				ts3Functions.getClientVariableAsInt(serverConnectionHandlerID, channelClientList[i], CLIENT_OUTPUT_MUTED, &outputMuted);
+				ts3Functions.getClientVariableAsInt(serverConnectionHandlerID, channelClientList[i], CLIENT_TYPE, &clientType);
 			}
 
-			int red = talking ? 255 : outputMuted ? 160 : inputMuted ? 0 : 255;
-			int green = talking ? 0 : outputMuted ? 160 : inputMuted ? 0 : 255;
-			int blue = talking ? 0 : outputMuted ? 160 : inputMuted ? 204 : 255;
+			int red = clientType ? 152 : talking ? 255 : outputMuted ? 160 : inputMuted ? 0 : 255;
+			int green = clientType ? 76 : talking ? 0 : outputMuted ? 160 : inputMuted ? 0 : 255;
+			int blue = clientType ? 0 : talking ? 0 : outputMuted ? 160 : inputMuted ? 204 : 255;
 			//std::string status = inputMuted && outputMuted ? "<IO> " : inputMuted ? "<I> " : outputMuted ? "<O> " : "";
 			std::string text = std::string(clientName);
 			LogiLcdColorSetText(i + 1 - cursorPosition, _wcsdup(std::wstring(text.begin(), text.end()).c_str()), red, green, blue);
@@ -461,15 +470,6 @@ void LCDScreen::Update()
 	}
 	case MENU:
 	{
-		int talking, inputMuted, outputMuted;
-		ts3Functions.getClientSelfVariableAsInt(serverConnectionHandlerID, CLIENT_FLAG_TALKING, &talking);
-		ts3Functions.getClientSelfVariableAsInt(serverConnectionHandlerID, CLIENT_INPUT_MUTED, &inputMuted);
-		ts3Functions.getClientSelfVariableAsInt(serverConnectionHandlerID, CLIENT_OUTPUT_MUTED, &outputMuted);
-
-		int red = talking ? 255 : outputMuted ? 160 : inputMuted ? 0 : 255;
-		int green = talking ? 0 : outputMuted ? 160 : inputMuted ? 0 : 255;
-		int blue = talking ? 0 : outputMuted ? 160 : inputMuted ? 204 : 255;
-
 		LogiLcdColorSetTitle(_wcsdup(L"Menu"), red, green, blue);
 
 		for (unsigned i = 0; i < MAX_MENU_ITEMS; i++)
@@ -490,15 +490,6 @@ void LCDScreen::Update()
 	}
 	case CHANNELS:
 	{
-		int talking, inputMuted, outputMuted;
-		ts3Functions.getClientSelfVariableAsInt(serverConnectionHandlerID, CLIENT_FLAG_TALKING, &talking);
-		ts3Functions.getClientSelfVariableAsInt(serverConnectionHandlerID, CLIENT_INPUT_MUTED, &inputMuted);
-		ts3Functions.getClientSelfVariableAsInt(serverConnectionHandlerID, CLIENT_OUTPUT_MUTED, &outputMuted);
-
-		int red = talking ? 255 : outputMuted ? 160 : inputMuted ? 0 : 255;
-		int green = talking ? 0 : outputMuted ? 160 : inputMuted ? 0 : 255;
-		int blue = talking ? 0 : outputMuted ? 160 : inputMuted ? 204 : 255;
-
 		LogiLcdColorSetTitle(_wcsdup(L"Channels"), red, green, blue);
 
 		anyID clientID = 0;
@@ -544,6 +535,27 @@ void LCDScreen::Update()
 		{
 			LogiLcdColorSetText(i, _wcsdup(L""));
 		}
+		break;
+	}
+	case ADMIN: //TODO
+	{
+		LogiLcdColorSetTitle(_wcsdup(L"Admin Menu"), red, green, blue);
+		break;
+	}
+	case HELP:
+	{
+		LogiLcdColorSetTitle(_wcsdup(L"Help"), red, green, blue);
+		LogiLcdColorSetText(0, _wcsdup(L"Normal: L/R for In/O Mute &"), 0, 255, 0);
+		LogiLcdColorSetText(1, _wcsdup(L"MSG Scroll; U/D for Client"), 0, 255, 0);
+		LogiLcdColorSetText(2, _wcsdup(L"Scroll; OK to hide messages."), 0, 255, 0);
+
+		LogiLcdColorSetText(3, _wcsdup(L"Channel:U/D for Channel Scro"), 0, 0, 255);
+		LogiLcdColorSetText(4, _wcsdup(L"ll; OK to go to the channel."), 0, 0, 255);
+
+		LogiLcdColorSetText(5, _wcsdup(L"Admin:U/D for Channel Scroll"), 255, 255, 255);
+		LogiLcdColorSetText(6, _wcsdup(L"OK to do something."), 255, 255, 255);
+
+		LogiLcdColorSetText(7, _wcsdup(L"Cancel to go back to normal."), 255, 255, 255);
 		break;
 	}
 	default:
