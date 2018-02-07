@@ -213,10 +213,10 @@ void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenu
 			screen->Update();
 			break;
 		case MENU_ID_GLOBAL_3:
-			screen->ChangePosition(-1);
+			screen->ChangeCursorPosition(-1);
 			break;
 		case MENU_ID_GLOBAL_4:
-			screen->ChangePosition(1);
+			screen->ChangeCursorPosition(1);
 			break;
 		default:
 			break;

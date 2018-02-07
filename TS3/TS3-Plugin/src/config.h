@@ -26,7 +26,8 @@ enum LCD_MODES
 {
 	NORMAL = 0,
 	MENU = 1,
-	CHANNELS = 2
+	CHANNELS,
+	ADMIN,
 };
 
 class LCDScreen
@@ -35,12 +36,28 @@ private:
 	bool gotMessage = false;
 	std::string newestMessage = "";
 	anyID messageSender = 0;
+	unsigned messageCursorPosition = 0;
 
 	bool isActive = false;
 	unsigned cursorPosition = 0;
 	HANDLE controlThread = 0;
 	struct TS3Functions ts3Functions;
 	int currentMode = NORMAL;
+	int lastMode = NORMAL;
+
+	enum MENU_ITEMS
+	{
+		MUTE_INPUT = 0,
+		MUTE_OUTPUT = 1,
+		SWITCH_CHANNEL,
+		ADMIN_MENU,
+		MAX_MENU_ITEMS
+	};
+	const std::vector<std::string> menuItems = { "Mute Input", "Mute Output", "Switch Channel", "Admin Menu" };
+	unsigned menuCursorPosition = 0;
+
+	uint64 selectedChannel = 0;
+	unsigned channelCursorPosition = 0;
 
 public:
 	LCDScreen() {};
@@ -53,11 +70,22 @@ public:
 	void Init();
 	void Shutdown();
 
+	//Message related
 	void AddMessage(const char* msg, anyID sender);
 	void RemoveMessage();
+	void ChangeMessageCursorPosition(int changeValue);
 
+	//Normal Cursor
 	unsigned GetPosition() const;
-	void ChangePosition(int changeValue);
+	void ChangeCursorPosition(int changeValue);
+
+	//Menu
+	void SelectActiveItem();
+	void ChangeMenuCursorPosition(int changeValue);
+
+	//Channel
+	void ChangeChannelCursorPosition(int changeValue);
+	void SwitchChannel();
 
 	bool IsActive() const { return isActive; }
 
@@ -76,6 +104,12 @@ public:
 
 	void ButtonOKEvent();
 
+	void ButtonMenuEvent();
+	void ButtonCancelEvent();
+
+	//Mute Helpers
+	void MuteInput();
+	void MuteOutput();
 
 	//Helper
 	bool isClientInList(anyID* clientList, anyID* clientID);
