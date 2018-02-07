@@ -337,11 +337,13 @@ void LCDScreen::MuteOutput()
 void LCDScreen::Init()
 {
 	LogiLcdInit(_wcsdup(L"TeamSpeak 3"), LOGI_LCD_TYPE_MONO | LOGI_LCD_TYPE_COLOR);
-	LogiLcdUpdate(); //Force Update
 
 	isActive = true;
 
 	StartControlThread();
+
+	//Refresh
+	Update();
 }
 
 void LCDScreen::Shutdown()
@@ -409,15 +411,18 @@ void LCDScreen::Update()
 		}
 		else
 		{
+			bool connected = true;
 			char* serverName = new char[128];
 			char* channelName = new char[128];
-			ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_NAME, &serverName);
-			ts3Functions.getChannelVariableAsString(serverConnectionHandlerID, channelID, CHANNEL_NAME, &channelName);
+			if (ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_NAME, &serverName) == ERROR_not_connected)
+				connected = false;
+			if (ts3Functions.getChannelVariableAsString(serverConnectionHandlerID, channelID, CHANNEL_NAME, &channelName) == ERROR_not_connected)
+				connected = false;
 			std::string sServerName{ serverName };
 			if (sServerName.size() > 13) //30 is the maximum so resize it to have the '-' in the middle
 				sServerName.resize(13);
 			std::string sChannelName{ channelName };
-			fLineText += sServerName + " - " + sChannelName;
+			fLineText += connected ? sServerName + " - " + sChannelName : "Not Connected.";
 		}
 		LogiLcdColorSetText(0, _wcsdup(std::wstring(fLineText.begin(), fLineText.end()).c_str()));
 
@@ -490,7 +495,7 @@ void LCDScreen::Update()
 	}
 	case CHANNELS:
 	{
-		LogiLcdColorSetTitle(_wcsdup(L"Channels"), red, green, blue);
+		LogiLcdColorSetTitle(_wcsdup(L"Channel Switcher"), red, green, blue);
 
 		anyID clientID = 0;
 		uint64 channelID = 0;
@@ -540,6 +545,8 @@ void LCDScreen::Update()
 	case ADMIN: //TODO
 	{
 		LogiLcdColorSetTitle(_wcsdup(L"Admin Menu"), red, green, blue);
+
+
 		break;
 	}
 	case HELP:
@@ -552,7 +559,7 @@ void LCDScreen::Update()
 		LogiLcdColorSetText(3, _wcsdup(L"Channel:U/D for Channel Scro"), 0, 0, 255);
 		LogiLcdColorSetText(4, _wcsdup(L"ll; OK to go to the channel."), 0, 0, 255);
 
-		LogiLcdColorSetText(5, _wcsdup(L"Admin:U/D for Channel Scroll"), 255, 255, 255);
+		LogiLcdColorSetText(5, _wcsdup(L"Admin:U/D for Client Scroll"), 255, 255, 255);
 		LogiLcdColorSetText(6, _wcsdup(L"OK to do something."), 255, 255, 255);
 
 		LogiLcdColorSetText(7, _wcsdup(L"Cancel to go back to normal."), 255, 255, 255);

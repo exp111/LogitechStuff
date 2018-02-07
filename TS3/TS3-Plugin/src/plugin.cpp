@@ -181,8 +181,6 @@ static struct PluginMenuItem* createMenuItem(enum PluginMenuType type, int id, c
 enum {
 	MENU_ID_GLOBAL_1 = 1,
 	MENU_ID_GLOBAL_2,
-	MENU_ID_GLOBAL_3,
-	MENU_ID_GLOBAL_4,
 	MENU_ID_MAX
 };
 
@@ -191,8 +189,6 @@ void ts3plugin_initMenus(struct PluginMenuItem*** menuItems, char** menuIcon) {
 	BEGIN_CREATE_MENUS(MENU_ID_MAX - 1); //Needs to be correct
 	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, MENU_ID_GLOBAL_1, "Print Test Bool", "");
 	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, MENU_ID_GLOBAL_2, "Force Update", "");
-	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, MENU_ID_GLOBAL_3, "Pos -1", "");
-	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, MENU_ID_GLOBAL_4, "Pos +1", "");
 	END_CREATE_MENUS;
 
 	*menuIcon = (char*)malloc(PLUGIN_MENU_BUFSZ * sizeof(char));
@@ -211,12 +207,6 @@ void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenu
 			break;
 		case MENU_ID_GLOBAL_2:
 			screen->Update();
-			break;
-		case MENU_ID_GLOBAL_3:
-			screen->ChangeCursorPosition(-1);
-			break;
-		case MENU_ID_GLOBAL_4:
-			screen->ChangeCursorPosition(1);
 			break;
 		default:
 			break;
