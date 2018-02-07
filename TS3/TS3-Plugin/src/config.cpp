@@ -5,11 +5,12 @@ Config* config = new Config;
 
 LCDScreen* screen = new LCDScreen();
 
-void LCDScreen::AddMessage(const char * msg, anyID sender)
+void LCDScreen::AddMessage(const char * msg, anyID sender, const char* senderName)
 {
 	gotMessage = true;
 	newestMessage = std::string(msg);
 	messageSender = sender;
+	messageSenderName = std::string(senderName);
 	messageCursorPosition = 0;
 
 	//Refresh
@@ -22,6 +23,7 @@ void LCDScreen::RemoveMessage()
 	{
 		newestMessage = "";
 		messageSender = 0;
+		messageSenderName = "";
 		gotMessage = false;
 		messageCursorPosition = 0;
 	}
@@ -387,9 +389,7 @@ void LCDScreen::Update()
 		std::string title;
 		if (gotMessage)
 		{
-			char* messageSenderName = new char[64];
-			ts3Functions.getClientVariableAsString(serverConnectionHandlerID, messageSender, CLIENT_NICKNAME, &messageSenderName);
-			title = "From: " + std::string(messageSenderName);
+			title = "From: " + std::string(messageSenderName) + " (" + std::to_string(messageSender) + ")";
 		}
 		else
 		{

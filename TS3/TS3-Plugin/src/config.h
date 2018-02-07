@@ -36,6 +36,7 @@ private:
 	bool gotMessage = false;
 	std::string newestMessage = "";
 	anyID messageSender = 0;
+	std::string messageSenderName = "";
 	unsigned messageCursorPosition = 0;
 
 	bool isActive = false;
@@ -72,7 +73,7 @@ public:
 	void Shutdown();
 
 	//Message related
-	void AddMessage(const char* msg, anyID sender);
+	void AddMessage(const char* msg, anyID sender, const char* senderName);
 	void RemoveMessage();
 	void ChangeMessageCursorPosition(int changeValue);
 
