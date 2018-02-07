@@ -64,7 +64,7 @@ void LCDScreen::ChangeCursorPosition(int changeValue)
 
 	std::vector<anyID> channelClientList = GetChannelContent(serverConnectionHandlerID, channelID);
 
-	if (channelClientList.size() - changed <= 7) //if we hit the limit don't
+	if (channelClientList.size() - changed < 7) //if we hit the limit don't
 		return;
 
 	cursorPosition = changed;
