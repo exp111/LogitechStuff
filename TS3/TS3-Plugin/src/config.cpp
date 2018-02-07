@@ -389,7 +389,7 @@ void LCDScreen::Update()
 		std::string title;
 		if (gotMessage)
 		{
-			title = "From: " + std::string(messageSenderName) + " (" + std::to_string(messageSender) + ")";
+			title = "From: " + messageSenderName + " (" + std::to_string(messageSender) + ")";
 		}
 		else
 		{
