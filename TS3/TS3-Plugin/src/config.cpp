@@ -459,8 +459,8 @@ void LCDScreen::Update()
 				ts3Functions.getClientVariableAsInt(serverConnectionHandlerID, channelClientList[i], CLIENT_TYPE, &clientType);
 			}
 
-			int red = clientType ? 152 : talking ? 255 : outputMuted ? 160 : inputMuted ? 0 : 255;
-			int green = clientType ? 76 : talking ? 0 : outputMuted ? 160 : inputMuted ? 0 : 255;
+			int red = clientType ? 0 : talking ? 255 : outputMuted ? 160 : inputMuted ? 0 : 255;
+			int green = clientType ? 255 : talking ? 0 : outputMuted ? 160 : inputMuted ? 0 : 255;
 			int blue = clientType ? 0 : talking ? 0 : outputMuted ? 160 : inputMuted ? 204 : 255;
 			//std::string status = inputMuted && outputMuted ? "<IO> " : inputMuted ? "<I> " : outputMuted ? "<O> " : "";
 			std::string text = std::string(clientName);
@@ -559,8 +559,8 @@ void LCDScreen::Update()
 		LogiLcdColorSetText(3, _wcsdup(L"Channel:U/D for Channel Scro"), 0, 0, 255);
 		LogiLcdColorSetText(4, _wcsdup(L"ll; OK to go to the channel."), 0, 0, 255);
 
-		LogiLcdColorSetText(5, _wcsdup(L"Admin:U/D for Client Scroll"), 255, 255, 255);
-		LogiLcdColorSetText(6, _wcsdup(L"OK to do something."), 255, 255, 255);
+		LogiLcdColorSetText(5, _wcsdup(L"Admin:U/D for Client Scroll"), 255, 0, 0);
+		LogiLcdColorSetText(6, _wcsdup(L"OK to do something."), 255, 0, 0);
 
 		LogiLcdColorSetText(7, _wcsdup(L"Cancel to go back to normal."), 255, 255, 255);
 		break;
