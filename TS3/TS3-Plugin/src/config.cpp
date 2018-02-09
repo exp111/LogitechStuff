@@ -156,6 +156,21 @@ void LCDScreen::SwitchChannel()
 	ts3Functions.requestClientMove(serverConnectionHandlerID, mClientID, selectedChannel, "", NULL);
 }
 
+void LCDScreen::ChangeHelpSite(int changeValue)
+{
+	int changed = helpSite + changeValue;
+	if (changed < 0)
+		changed += HELP_MAX_SITES;
+
+	if (changed >= HELP_MAX_SITES)
+		changed = 0;
+
+	helpSite = changed;
+
+	//Refresh
+	Update();
+}
+
 DWORD WINAPI ControlThread(void * data)
 {
 	while (screen->IsActive())
@@ -230,27 +245,41 @@ void LCDScreen::ButtonDownEvent()
 
 void LCDScreen::ButtonLeftEvent()
 {
-	if (currentMode == NORMAL)
+	switch (currentMode)
 	{
+	case NORMAL:
 		if (gotMessage) //Message Cursor
 			ChangeMessageCursorPosition(-1);
 		else //Mute
 		{
 			MuteInput();
 		}
+		break;
+	case HELP:
+		ChangeHelpSite(-1);
+		break;
+	default:
+		break;
 	}
 }
 
 void LCDScreen::ButtonRightEvent()
 {
-	if (currentMode == NORMAL)
+	switch (currentMode)
 	{
+	case NORMAL:
 		if (gotMessage) //Message Cursor
 			ChangeMessageCursorPosition(1);
 		else //Mute
 		{
 			MuteOutput();
 		}
+		break;
+	case HELP:
+		ChangeHelpSite(1);
+		break;
+	default:
+		break;
 	}
 }
 
@@ -551,18 +580,77 @@ void LCDScreen::Update()
 	}
 	case HELP:
 	{
-		LogiLcdColorSetTitle(_wcsdup(L"Help"), red, green, blue);
-		LogiLcdColorSetText(0, _wcsdup(L"Normal: L/R for In/O Mute &"), 0, 255, 0);
-		LogiLcdColorSetText(1, _wcsdup(L"MSG Scroll; U/D for Client"), 0, 255, 0);
-		LogiLcdColorSetText(2, _wcsdup(L"Scroll; OK to hide messages."), 0, 255, 0);
-
-		LogiLcdColorSetText(3, _wcsdup(L"Channel:U/D for Channel Scro"), 0, 0, 255);
-		LogiLcdColorSetText(4, _wcsdup(L"ll; OK to go to the channel."), 0, 0, 255);
-
-		LogiLcdColorSetText(5, _wcsdup(L"Admin:U/D for Client Scroll"), 255, 0, 0);
-		LogiLcdColorSetText(6, _wcsdup(L"OK to do something."), 255, 0, 0);
-
-		LogiLcdColorSetText(7, _wcsdup(L"Cancel to go back to normal."), 255, 255, 255);
+		switch (helpSite)
+		{
+		case HELP_HELP:
+			LogiLcdColorSetTitle(_wcsdup(L"Help - Help Menu"), red, green, blue);
+			LogiLcdColorSetText(0, _wcsdup(L"Press LEFT/RIGHT to navigate"), 0, 255, 0);
+			LogiLcdColorSetText(1, _wcsdup(L"through the help pages."), 0, 255, 0);
+			LogiLcdColorSetText(2, _wcsdup(L""));
+			LogiLcdColorSetText(3, _wcsdup(L"Press MENU to open the Menu."), 0, 0, 255);
+			LogiLcdColorSetText(4, _wcsdup(L""));
+			LogiLcdColorSetText(5, _wcsdup(L""));
+			LogiLcdColorSetText(6, _wcsdup(L""));
+			LogiLcdColorSetText(7, _wcsdup(L"Press CANCEL to go back."), 255, 255, 255);
+			break;
+		case HELP_GENERAL:
+			LogiLcdColorSetTitle(_wcsdup(L"Help - General"), red, green, blue);
+			LogiLcdColorSetText(0, _wcsdup(L"Press anywhere MENU to open"), 0, 255, 0);
+			LogiLcdColorSetText(1, _wcsdup(L"the menu."), 0, 255, 0);
+			LogiLcdColorSetText(2, _wcsdup(L"Title bar shows talking and"), 255, 255, 255);
+			LogiLcdColorSetText(3, _wcsdup(L"mute indicator:"), 255, 255, 255);
+			LogiLcdColorSetText(4, _wcsdup(L"Red = Talking"), 255, 0, 0);
+			LogiLcdColorSetText(5, _wcsdup(L"Blue = Input Muted"), 0, 0, 255);
+			LogiLcdColorSetText(6, _wcsdup(L"Grey = Output Muted"), 160, 160, 160);
+			LogiLcdColorSetText(7, _wcsdup(L"Press CANCEL to return."), 255, 255, 255);
+			break;
+		case HELP_NORMAL:
+			LogiLcdColorSetTitle(_wcsdup(L"Help - Normal View"), red, green, blue);
+			LogiLcdColorSetText(0, _wcsdup(L"Green Clients are queries."), 0, 255, 0);
+			LogiLcdColorSetText(1, _wcsdup(L"Press UP/DOWN to scroll thro"), 0, 0, 255);
+			LogiLcdColorSetText(2, _wcsdup(L"ugh the clients."), 0, 0, 255);
+			LogiLcdColorSetText(3, _wcsdup(L"Press LEFT/RIGHT to scroll"), 255, 0, 0);
+			LogiLcdColorSetText(4, _wcsdup(L"through messages or mute"), 255, 0, 0);
+			LogiLcdColorSetText(5, _wcsdup(L"Input/Output."), 255, 0, 0);
+			LogiLcdColorSetText(6, _wcsdup(L"Clients use same color"), 255, 255, 0);
+			LogiLcdColorSetText(7, _wcsdup(L"format as the title bar."), 255, 255, 0);
+			break;
+		case HELP_MENU:
+			LogiLcdColorSetTitle(_wcsdup(L"Help - Menu"), red, green, blue);
+			LogiLcdColorSetText(0, _wcsdup(L"Press MENU to go back to"), 0, 255, 0);
+			LogiLcdColorSetText(1, _wcsdup(L"last page."), 0, 255, 0);
+			LogiLcdColorSetText(2, _wcsdup(L""));
+			LogiLcdColorSetText(3, _wcsdup(L"Press UP/DOWN to navigate"), 0, 0, 255);
+			LogiLcdColorSetText(4, _wcsdup(L"through the menu."), 0, 0, 255);
+			LogiLcdColorSetText(5, _wcsdup(L"Press OK to select a item."), 255, 0, 0);
+			LogiLcdColorSetText(6, _wcsdup(L""));
+			LogiLcdColorSetText(7, _wcsdup(L"Press CANCEL to go back."), 255, 255, 255);
+			break;
+		case HELP_CHANNEL:
+			LogiLcdColorSetTitle(_wcsdup(L"Help - Channel Switcher"), red, green, blue);
+			LogiLcdColorSetText(0, _wcsdup(L"Press UP/DOWN to navigate"), 0, 0, 255);
+			LogiLcdColorSetText(1, _wcsdup(L"through the channels."), 0, 0, 255);
+			LogiLcdColorSetText(2, _wcsdup(L"Press OK to switch to"), 255, 0, 0);
+			LogiLcdColorSetText(3, _wcsdup(L"a channel."), 255, 0, 0);
+			LogiLcdColorSetText(4, _wcsdup(L""));
+			LogiLcdColorSetText(5, _wcsdup(L""));
+			LogiLcdColorSetText(6, _wcsdup(L""));
+			LogiLcdColorSetText(7, _wcsdup(L"Press CANCEL to go back."), 255, 255, 255);
+			break;
+		case HELP_ADMIN:
+			LogiLcdColorSetTitle(_wcsdup(L"Help - Admin Menu"), red, green, blue);
+			LogiLcdColorSetText(0, _wcsdup(L"Press UP/DOWN to navigate"), 0, 0, 255);
+			LogiLcdColorSetText(1, _wcsdup(L"through the clients."), 0, 0, 255);
+			LogiLcdColorSetText(2, _wcsdup(L"Press OK to select a client."), 255, 0, 0);
+			LogiLcdColorSetText(3, _wcsdup(L""));
+			LogiLcdColorSetText(4, _wcsdup(L""));
+			LogiLcdColorSetText(5, _wcsdup(L""));
+			LogiLcdColorSetText(6, _wcsdup(L""));
+			LogiLcdColorSetText(7, _wcsdup(L"Press CANCEL to go back."), 255, 255, 255);
+			break;
+		default:
+			break;
+		}
 		break;
 	}
 	default:

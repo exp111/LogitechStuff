@@ -61,6 +61,18 @@ private:
 	uint64 selectedChannel = 0;
 	unsigned channelCursorPosition = 0;
 
+	enum HELP_SITES
+	{
+		HELP_HELP = 0,
+		HELP_GENERAL = 1,
+		HELP_NORMAL,
+		HELP_MENU,
+		HELP_CHANNEL,
+		HELP_ADMIN,
+		HELP_MAX_SITES
+	};
+	unsigned helpSite = 0;
+
 public:
 	LCDScreen() {};
 	~LCDScreen()
@@ -88,6 +100,9 @@ public:
 	//Channel
 	void ChangeChannelCursorPosition(int changeValue);
 	void SwitchChannel();
+
+	//Help
+	void ChangeHelpSite(int changeValue);
 
 	bool IsActive() const { return isActive; }
 
