@@ -190,11 +190,14 @@ void LCDScreen::SelectClient()
 		{
 			int isMuted;
 			ts3Functions.getClientVariableAsInt(serverConnectionHandlerID, selectedClient, CLIENT_IS_MUTED, &isMuted);
-			anyID clientArray[] = { selectedClient };
+			
+			anyID clientArray[1] = { selectedClient };
+			
 			if (isMuted)
 				ts3Functions.requestUnmuteClients(serverConnectionHandlerID, clientArray, NULL);
 			else
 				ts3Functions.requestMuteClients(serverConnectionHandlerID, clientArray, NULL);
+
 			break;
 		}
 		default:
@@ -714,7 +717,7 @@ void LCDScreen::Update()
 				unsigned end = clientCursorPosition + 5 > count ? count : clientCursorPosition + 5 < 8 ? 8 : clientCursorPosition + 5; //don't go over the limit and don't stay to small
 				for (unsigned i = start; i < count && i < end; i++)
 				{
-					uint64 current = clientList[i];
+					anyID current = clientList[i];
 
 					bool active = clientCursorPosition == i;
 					if (active)
