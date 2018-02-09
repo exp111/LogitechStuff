@@ -91,6 +91,8 @@ void LCDScreen::SelectActiveItem()
 		Update();
 		break;
 	case ADMIN_MENU:
+		clientCursorPosition = 0;
+		adminMenuCursorPosition = 0;
 		currentMode = ADMIN;
 		Update();
 		break;
@@ -157,6 +159,98 @@ void LCDScreen::SwitchChannel()
 	ts3Functions.requestClientMove(serverConnectionHandlerID, mClientID, selectedChannel, "", NULL);
 }
 
+void LCDScreen::SelectClient()
+{
+	if (!hasSelected)
+	{
+		hasSelected = true;
+		adminMenuCursorPosition = 0;
+	}
+	else
+	{
+		uint64 serverConnectionHandlerID = ts3Functions.getCurrentServerConnectionHandlerID();
+		switch (adminMenuCursorPosition)
+		{
+		case KICK_CHANNEL:
+			ts3Functions.requestClientKickFromChannel(serverConnectionHandlerID, selectedClient, "Just cause", NULL);
+			break;
+		case KICK_SERVER:
+			ts3Functions.requestClientKickFromServer(serverConnectionHandlerID, selectedClient, "Just cause", NULL);
+			break;
+		case MOVE_TO_CHANNEL:
+			//TODO
+			break;
+		case BAN_TEMP:
+			ts3Functions.banclient(serverConnectionHandlerID, selectedClient, 10, "Just cause", NULL);
+			break;
+		case BAN_PERM:
+			ts3Functions.banclient(serverConnectionHandlerID, selectedClient, 0, "Just cause", NULL);
+			break;
+		case MUTE:
+		{
+			int isMuted;
+			ts3Functions.getClientVariableAsInt(serverConnectionHandlerID, selectedClient, CLIENT_IS_MUTED, &isMuted);
+			anyID clientArray[] = { selectedClient };
+			if (isMuted)
+				ts3Functions.requestUnmuteClients(serverConnectionHandlerID, clientArray, NULL);
+			else
+				ts3Functions.requestMuteClients(serverConnectionHandlerID, clientArray, NULL);
+			break;
+		}
+		default:
+			break;
+		}
+
+		hasSelected = false;
+	}
+
+	//Refresh
+	Update();
+}
+
+void LCDScreen::ChangeClientCursorPosition(int changeValue)
+{
+	int changed = clientCursorPosition + changeValue;
+
+	anyID* clientList;
+	uint64 serverConnectionHandlerID = ts3Functions.getCurrentServerConnectionHandlerID();
+	if (ts3Functions.getClientList(serverConnectionHandlerID, &clientList) != ERROR_ok)
+		return;
+
+	unsigned count = 0;
+	for (unsigned i = 0; clientList[i]; i++)
+	{
+		count++;
+	}
+
+	if (changed < 0)
+		changed += count;
+
+	if (changed >= count) //if we hit the limit go back to first
+		changed -= count;
+
+	clientCursorPosition = changed;
+
+	//Refresh
+	Update();
+}
+
+void LCDScreen::ChangeAdminMenuCursorPosition(int changeValue)
+{
+	int changed = adminMenuCursorPosition + changeValue;
+
+	if (changed < 0)
+		changed += MAX_ADMIN_MENU_ITEMS;
+
+	if (changed >= MAX_ADMIN_MENU_ITEMS) //if we hit the limit go back to first
+		changed -= MAX_ADMIN_MENU_ITEMS;
+
+	adminMenuCursorPosition = changed;
+
+	//Refresh
+	Update();
+}
+
 void LCDScreen::ChangeHelpSite(int changeValue)
 {
 	int changed = helpSite + changeValue;
@@ -218,6 +312,13 @@ void LCDScreen::ButtonUpEvent()
 		//ChannelCursor
 		ChangeChannelCursorPosition(-1);
 		break;
+	case ADMIN:
+		//ClientCursor
+		if (hasSelected)
+			ChangeAdminMenuCursorPosition(-1);
+		else
+			ChangeClientCursorPosition(-1);
+		break;
 	default:
 		break;
 	}
@@ -238,6 +339,13 @@ void LCDScreen::ButtonDownEvent()
 	case CHANNELS:
 		//ChannelCursor
 		ChangeChannelCursorPosition(1);
+		break;
+	case ADMIN:
+		//ClientCursor
+		if (hasSelected)
+			ChangeAdminMenuCursorPosition(1);
+		else
+			ChangeClientCursorPosition(1);
 		break;
 	default:
 		break;
@@ -297,6 +405,9 @@ void LCDScreen::ButtonOKEvent()
 	case CHANNELS:
 		SwitchChannel();
 		break;
+	case ADMIN:
+		SelectClient();
+		break;
 	default:
 		break;
 	}
@@ -337,8 +448,15 @@ void LCDScreen::ButtonMenuEvent()
 
 void LCDScreen::ButtonCancelEvent()
 {
-	currentMode = NORMAL;
-	lastMode = NORMAL;
+	if (currentMode == ADMIN && hasSelected) //return to admin menu from selection menu
+	{
+		hasSelected = false;
+	}
+	else
+	{
+		currentMode = NORMAL;
+		lastMode = NORMAL;
+	}
 
 	//Refresh
 	Update();
@@ -572,11 +690,87 @@ void LCDScreen::Update()
 		}
 		break;
 	}
-	case ADMIN: //TODO
+	case ADMIN:
 	{
 		LogiLcdColorSetTitle(_wcsdup(L"Admin Menu"), red, green, blue);
+		if (!hasSelected)
+		{
+			anyID clientID = 0;
+			uint64 channelID = 0;
+			ts3Functions.getClientID(serverConnectionHandlerID, &clientID);
 
+			anyID* clientList;
+			unsigned count = 0;
+			if (ts3Functions.getClientList(serverConnectionHandlerID, &clientList) == ERROR_ok)
+			{
+				for (unsigned i = 0; clientList[i]; i++)
+				{
+					count++;
+				}
 
+				unsigned clientCount = 0; //as we can't print at i we need a seperate counter
+				unsigned start = ((int)clientCursorPosition) - 3 < 0 ? 0 : clientCursorPosition + 5 > count ? count - 8 : clientCursorPosition - 3; //so we don't go under 0 and don't go to far
+				unsigned end = clientCursorPosition + 5 > count ? count : clientCursorPosition + 5 < 8 ? 8 : clientCursorPosition + 5; //don't go over the limit and don't stay to small
+				for (unsigned i = start; i < count && i < end; i++)
+				{
+					uint64 current = clientList[i];
+
+					bool active = clientCursorPosition == i;
+					if (active)
+						selectedClient = clientList[i];
+					bool isMe = current == clientID;
+
+					int red = active ? 255 : isMe ? 255 : 255;
+					int green = active ? 255 : isMe ? 0 : 255;
+					int blue = active ? 0 : isMe ? 0 : 255;
+
+					char* clientName = new char[64];
+					ts3Functions.getClientVariableAsString(serverConnectionHandlerID, current, CLIENT_NICKNAME, &clientName);
+
+					std::string text(clientName);
+					LogiLcdColorSetText(clientCount, _wcsdup(std::wstring(text.begin(), text.end()).c_str()), red, green, blue);
+					clientCount++;
+				}
+			}
+
+			for (unsigned i = count; i < 8; i++) //Empty the other lines
+			{
+				LogiLcdColorSetText(i, _wcsdup(L""));
+			}
+		}
+		else
+		{
+			std::string text = "Selected: ";
+			char* clientName = new char[64];
+			ts3Functions.getClientVariableAsString(serverConnectionHandlerID, selectedClient, CLIENT_NICKNAME, &clientName);
+			text += std::string(clientName) + " (" + std::to_string(selectedClient) + ")";
+			LogiLcdColorSetText(0, _wcsdup(std::wstring(text.begin(), text.end()).c_str()));
+
+			for (unsigned i = 0; i < MAX_ADMIN_MENU_ITEMS; i++) //Empty the other lines
+			{
+				bool active = adminMenuCursorPosition == i;
+				int red = active ? 255 : 255;
+				int green = active ? 255 : 255;
+				int blue = active ? 0 : 255;
+
+				std::string text = adminMenuItems[i];
+				
+				if (i == MUTE)
+				{
+					int isMuted;
+					ts3Functions.getClientVariableAsInt(serverConnectionHandlerID, selectedClient, CLIENT_IS_MUTED, &isMuted);
+					if (isMuted)
+						text = "Unmute";
+				}
+
+				LogiLcdColorSetText(i + 1, _wcsdup(std::wstring(text.begin(), text.end()).c_str()), red, green, blue);
+			}
+
+			for (unsigned i = MAX_ADMIN_MENU_ITEMS; i < 8; i++) //Empty the other lines
+			{
+				LogiLcdColorSetText(i + 1, _wcsdup(L""));
+			}
+		}
 		break;
 	}
 	case HELP:

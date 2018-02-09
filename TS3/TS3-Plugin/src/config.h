@@ -55,7 +55,7 @@ private:
 		HELP,
 		MAX_MENU_ITEMS
 	};
-	const std::vector<std::string> menuItems = { "Mute Input", "Mute Output", "Switch Channel", "Admin Menu (WIP)", "Help" };
+	const std::vector<std::string> menuItems = { "Mute Input", "Mute Output", "Switch Channel", "Admin Menu", "Help" };
 	unsigned menuCursorPosition = 0;
 
 	uint64 selectedChannel = 0;
@@ -72,6 +72,22 @@ private:
 		HELP_MAX_SITES
 	};
 	unsigned helpSite = 0;
+
+	enum ADMIN_MENU_ITEMS
+	{
+		KICK_CHANNEL = 0,
+		KICK_SERVER = 1,
+		MOVE_TO_CHANNEL,
+		BAN_TEMP,
+		BAN_PERM,
+		MUTE,
+		MAX_ADMIN_MENU_ITEMS
+	};
+	const std::vector<std::string> adminMenuItems = { "Kick from Channel", "Kick from Server", "Move to Channel (WIP)", "Ban Temporary", "Ban Permanent", "Mute" };
+	anyID selectedClient = 0;
+	unsigned clientCursorPosition = 0;
+	bool hasSelected = false;
+	unsigned adminMenuCursorPosition = 0;
 
 public:
 	LCDScreen() {};
@@ -100,6 +116,11 @@ public:
 	//Channel
 	void ChangeChannelCursorPosition(int changeValue);
 	void SwitchChannel();
+
+	//Admin Menu -> Clients
+	void SelectClient();
+	void ChangeClientCursorPosition(int changeValue);
+	void ChangeAdminMenuCursorPosition(int changeValue);
 
 	//Help
 	void ChangeHelpSite(int changeValue);
