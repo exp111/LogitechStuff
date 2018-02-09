@@ -274,6 +274,11 @@ int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetM
 	return 0;
 }
 
+void ts3plugin_onClientBanFromServerEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, anyID kickerID, const char * kickerName, const char * kickerUniqueIdentifier, uint64 time, const char * kickMessage)
+{
+	screen->Update();
+}
+
 int ts3plugin_onClientPokeEvent(uint64 serverConnectionHandlerID, anyID fromClientID, const char* pokerName, const char* pokerUniqueIdentity, const char* message, int ffIgnored)
 {
 	anyID mClientID;

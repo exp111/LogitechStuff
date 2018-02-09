@@ -590,7 +590,7 @@ void LCDScreen::Update()
 			//	continue;
 			//position++;
 			char* clientName = new char[64];
-			int talking, inputMuted, outputMuted, clientType = 0;
+			int talking, inputMuted, outputMuted, clientType = 0, isMuted = 0;
 			ts3Functions.getClientVariableAsString(serverConnectionHandlerID, channelClientList[i], CLIENT_NICKNAME, &clientName);
 
 			if (channelClientList[i] == clientID)
@@ -605,11 +605,12 @@ void LCDScreen::Update()
 				ts3Functions.getClientVariableAsInt(serverConnectionHandlerID, channelClientList[i], CLIENT_INPUT_MUTED, &inputMuted);
 				ts3Functions.getClientVariableAsInt(serverConnectionHandlerID, channelClientList[i], CLIENT_OUTPUT_MUTED, &outputMuted);
 				ts3Functions.getClientVariableAsInt(serverConnectionHandlerID, channelClientList[i], CLIENT_TYPE, &clientType);
+				ts3Functions.getClientVariableAsInt(serverConnectionHandlerID, channelClientList[i], CLIENT_IS_MUTED, &isMuted);
 			}
 
-			int red = clientType ? 0 : talking ? 255 : outputMuted ? 160 : inputMuted ? 0 : 255;
-			int green = clientType ? 255 : talking ? 0 : outputMuted ? 160 : inputMuted ? 0 : 255;
-			int blue = clientType ? 0 : talking ? 0 : outputMuted ? 160 : inputMuted ? 204 : 255;
+			int red = clientType ? 0 : talking ? 255 : outputMuted ? 160 : inputMuted || isMuted ? 0 : 255;
+			int green = clientType ? 255 : talking ? 0 : outputMuted ? 160 : inputMuted || isMuted ? 0 : 255;
+			int blue = clientType ? 0 : talking ? 0 : outputMuted ? 160 : inputMuted || isMuted ? 204 : 255;
 			//std::string status = inputMuted && outputMuted ? "<IO> " : inputMuted ? "<I> " : outputMuted ? "<O> " : "";
 			std::string text = std::string(clientName);
 			LogiLcdColorSetText(i + 1 - cursorPosition, _wcsdup(std::wstring(text.begin(), text.end()).c_str()), red, green, blue);
