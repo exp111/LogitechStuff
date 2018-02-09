@@ -107,10 +107,10 @@ void LCDScreen::ChangeMenuCursorPosition(int changeValue)
 {
 	int changed = menuCursorPosition + changeValue;
 	if (changed < 0)
-		return;
+		changed += MAX_MENU_ITEMS;
 
-	if (MAX_MENU_ITEMS - changed <= 0) //if we hit the limit don't;
-		return;
+	if (changed >= MAX_MENU_ITEMS) //if we hit the limit go back to first
+		changed -= MAX_MENU_ITEMS;
 
 	menuCursorPosition = changed;
 
@@ -121,8 +121,6 @@ void LCDScreen::ChangeMenuCursorPosition(int changeValue)
 void LCDScreen::ChangeChannelCursorPosition(int changeValue)
 {
 	int changed = channelCursorPosition + changeValue;
-	if (changed < 0)
-		return;
 
 	uint64* channelList;
 	uint64 serverConnectionHandlerID = ts3Functions.getCurrentServerConnectionHandlerID();
@@ -135,8 +133,11 @@ void LCDScreen::ChangeChannelCursorPosition(int changeValue)
 		count++;
 	}
 
-	if (count - changed <= 0) //if we hit the limit don't;
-		return;
+	if (changed < 0)
+		changed += count;
+
+	if (changed >= count) //if we hit the limit go back to first
+		changed -= count;
 
 	channelCursorPosition = changed;
 
