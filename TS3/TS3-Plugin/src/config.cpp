@@ -752,7 +752,7 @@ void LCDScreen::Update()
 					char* clientName = new char[64];
 					ts3Functions.getClientVariableAsString(serverConnectionHandlerID, current, CLIENT_NICKNAME, &clientName);
 
-					std::string text(clientName);
+					std::string text = std::string(clientName) + " (" + std::to_string(clientList[i]) + ")";
 					LogiLcdColorSetText(clientCount, _wcsdup(std::wstring(text.begin(), text.end()).c_str()), red, green, blue);
 					clientCount++;
 				}
