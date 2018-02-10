@@ -180,6 +180,18 @@ void LCDScreen::SelectClient()
 		case MOVE_TO_CHANNEL:
 			//TODO
 			break;
+		case MOVE_HERE:
+		{
+			anyID clientID;
+			uint64 channelID;
+			char* path = new char[512];
+			char* password = new char[512];
+			ts3Functions.getClientID(serverConnectionHandlerID, &clientID);
+			ts3Functions.getChannelOfClient(serverConnectionHandlerID, clientID, &channelID);
+			ts3Functions.getChannelConnectInfo(serverConnectionHandlerID, channelID, path, password, 512);
+			ts3Functions.requestClientMove(serverConnectionHandlerID, selectedClient, channelID, password, NULL);
+			break;
+		}
 		case BAN_TEMP:
 			ts3Functions.banclient(serverConnectionHandlerID, selectedClient, 10, "Just cause", NULL);
 			break;
@@ -546,8 +558,16 @@ void LCDScreen::Update()
 		{
 			unsigned channelClientCount = channelClientList.size();
 			int serverClientCount = 0;
-			ts3Functions.requestServerVariables(serverConnectionHandlerID); //we need to request for client count
-			ts3Functions.getServerVariableAsInt(serverConnectionHandlerID, VIRTUALSERVER_CLIENTS_ONLINE, &serverClientCount);
+			anyID* clientList;
+			if (ts3Functions.getClientList(serverConnectionHandlerID, &clientList) == ERROR_ok)
+			{
+				for (int i = 0; clientList[i]; i++)
+				{
+					serverClientCount++;
+				}
+			}
+			//ts3Functions.requestServerVariables(serverConnectionHandlerID); //we need to request for client count
+			//ts3Functions.getServerVariableAsInt(serverConnectionHandlerID, VIRTUALSERVER_CLIENTS_ONLINE, &serverClientCount);
 			title = "TS3 - " + std::to_string(channelClientCount) + "/" + std::to_string(serverClientCount);
 		}
 		LogiLcdColorSetTitle(_wcsdup(std::wstring(title.begin(), title.end()).c_str()), red, green, blue);
@@ -664,7 +684,7 @@ void LCDScreen::Update()
 			}
 
 			unsigned channelCount = 0; //as we can't print at i we need a seperate counter
-			unsigned start = ((int)channelCursorPosition) - 3 < 0 ? 0 : channelCursorPosition + 5 > count ? count - 8 : channelCursorPosition - 3; //so we don't go under 0 and don't go to far
+			unsigned start = ((int)channelCursorPosition) - 3 < 0 ? 0 : channelCursorPosition + 5 > count ? ((int)count) - 8 < 0 ? 0 : count - 8 : channelCursorPosition - 3; //so we don't go under 0 and don't go to far
 			unsigned end = channelCursorPosition + 5 > count ? count : channelCursorPosition + 5 < 8 ? 8 : channelCursorPosition + 5; //don't go over the limit and don't stay to small
 			for (unsigned i = start; i < count && i < end; i++)
 			{
@@ -683,6 +703,7 @@ void LCDScreen::Update()
 				ts3Functions.getChannelVariableAsString(serverConnectionHandlerID, current, CHANNEL_NAME, &channelName);
 
 				std::string text(channelName);
+				text += " (" + std::to_string(channelList[i]) + ")";
 				LogiLcdColorSetText(channelCount, _wcsdup(std::wstring(text.begin(), text.end()).c_str()), red, green, blue);
 				channelCount++;
 			}
@@ -713,7 +734,7 @@ void LCDScreen::Update()
 				}
 
 				unsigned clientCount = 0; //as we can't print at i we need a seperate counter
-				unsigned start = ((int)clientCursorPosition) - 3 < 0 ? 0 : clientCursorPosition + 5 > count ? count - 8 : clientCursorPosition - 3; //so we don't go under 0 and don't go to far
+				unsigned start = ((int)clientCursorPosition) - 3 < 0 ? 0 : clientCursorPosition + 5 > count ? ((int)count) - 8 < 0 ? 0 : count - 8 : clientCursorPosition - 3; //so we don't go under 0 and don't go to far
 				unsigned end = clientCursorPosition + 5 > count ? count : clientCursorPosition + 5 < 8 ? 8 : clientCursorPosition + 5; //don't go over the limit and don't stay to small
 				for (unsigned i = start; i < count && i < end; i++)
 				{
