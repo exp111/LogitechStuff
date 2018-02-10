@@ -14,8 +14,18 @@ int main()
 		return 0;
 	}
 	
-	LogiArxAddFileAs(_wcsdup(L"index.html"), _wcsdup(L"index.html"), _wcsdup(L""));
-	LogiArxSetIndex(_wcsdup(L"index.html"));
+	if (!LogiArxAddFileAs(_wcsdup(L"index.html"), _wcsdup(L"index.html"), _wcsdup(L"")))
+	{
+		std::cout << "Did not found index.html. Make sure you have it in the same directory." << std::endl;
+		system("PAUSE");
+		return 0;
+	}
+	if (!LogiArxSetIndex(_wcsdup(L"index.html")))
+	{
+		std::cout << "Failed setting index." << std::endl;
+		system("PAUSE");
+		return 0;
+	}
 
 	while (!(GetKeyState(VK_ESCAPE) & 0x8000))
 	{
