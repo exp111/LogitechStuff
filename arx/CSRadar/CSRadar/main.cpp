@@ -5,6 +5,7 @@
 #include <Windows.h>
 #include <string>
 #include <iostream>
+#include <algorithm>
 
 #include "include/json.hpp"
 using json = nlohmann::json;
@@ -18,9 +19,9 @@ int main()
 		return 0;
 	}
 
-	const wchar_t* index = L"<!DOCTYPE html><html><head><meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1, target-densityDpi=device-dpi, user-scalable=no' /></head><style>* {-webkit-touch-callout: none;-webkit-user-select: none;}canvas {border: 1px solid #d3d3d3;position: absolute;top: 25%;left: 0%;height: 50%;width: 95%;margin: 0 0 0 2.5%;}#json {visibility: hidden;}</style><body><canvas id='myCanvas' width=500 height=500></canvas><div id='json'>{}</div><script>function check() {//get canvasvar c = document.getElementById('myCanvas');var ctx = c.getContext('2d');//clearctx.clearRect(0, 0, 500, 500);//Json parsevar json = document.getElementById('json').innerHTML;var jsonParsed = JSON.parse(json);if (jsonParsed.hasOwnProperty('data')) {//draw the playersfor (i = 0; i < jsonParsed.data.length; i++) {ctx.fillStyle = jsonParsed.data[i].enemy ? 'red' : 'green';ctx.font = '20px Comic Sans MS';ctx.fillText(jsonParsed.data[i].name, 250 + jsonParsed.data[i].x, 250 + jsonParsed.data[i].y);ctx.fillRect(250 + jsonParsed.data[i].x, 250 + jsonParsed.data[i].y, 25, 25);}}//Radar indicatorctx.moveTo(250, 0); //top midctx.lineTo(250, 500); //down midctx.stroke();ctx.moveTo(0, 250); //left midctx.lineTo(500, 250); //right midctx.stroke();}setInterval(function () { check(); }, 100);</script></body></html>";
-	const wchar_t* style = L"* { -webkit-touch-callout: none; -webkit-user-select: none;}canvas { border: 1px solid #d3d3d3; position: absolute; top: 25%; left: 0%; height: 50%; width: 95%; margin: 0 0 0 2.5%;}#json { visibility: hidden;}";
-	const wchar_t* script = L"function check() { //get canvas var c = document.getElementById('myCanvas'); var ctx = c.getContext('2d'); //clear ctx.clearRect(0, 0, 500, 500); //Json parse var json = document.getElementById('json').innerHTML; var jsonParsed = JSON.parse(json); if (jsonParsed.hasOwnProperty('data')) { //draw the players for (i = 0; i < jsonParsed.data.length; i++) { ctx.fillStyle = jsonParsed.data[i].enemy ? 'red' : 'green'; ctx.font = '20px Comic Sans MS'; ctx.fillText(jsonParsed.data[i].name, 250 + jsonParsed.data[i].x, 250 + jsonParsed.data[i].y); ctx.fillRect(250 + jsonParsed.data[i].x, 250 + jsonParsed.data[i].y, 25, 25); } } //Radar indicator ctx.moveTo(250, 0); //top mid ctx.lineTo(250, 500); //down mid ctx.stroke(); ctx.moveTo(0, 250); //left mid ctx.lineTo(500, 250); //right mid ctx.stroke();}setInterval(function () { check(); }, 100);";
+	const wchar_t* index = L"<!DOCTYPE html><html><head><meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1, target-densityDpi=device-dpi, user-scalable=no' /><link rel='stylesheet' type='text/css' href='style.css'></head><body><canvas id='myCanvas' width=500 height=500></canvas><div id='json'>{}</div><script src='script.js'></script></body></html>";
+	const wchar_t* style = L"* { -webkit-touch-callout: none; -webkit-user-select: none;}canvas { border: 1px solid #d3d3d3; position: absolute; top: 25%; left: 0%; height: 50%; width: 95%; margin: 0 0 0 2.5%;}#json { visibility: visible; color: white; }";
+	const wchar_t* script = L"function check() { var c = document.getElementById('myCanvas'); var ctx = c.getContext('2d'); ctx.clearRect(0, 0, 500, 500); var json = document.getElementById('json').innerHTML; var jsonParsed = JSON.parse(json); if (jsonParsed.hasOwnProperty('data')) { for (i = 0; i < jsonParsed.data.length; i++) { ctx.fillStyle = jsonParsed.data[i].enemy ? 'red' : 'green'; ctx.font = '20px Comic Sans MS'; ctx.fillText(jsonParsed.data[i].name, 250 + jsonParsed.data[i].x, 250 + jsonParsed.data[i].y); ctx.fillRect(250 + jsonParsed.data[i].x, 250 + jsonParsed.data[i].y, 25, 25); } } ctx.moveTo(250, 0); ctx.lineTo(250, 500); ctx.stroke(); ctx.moveTo(0, 250); ctx.lineTo(500, 250); ctx.stroke();}setInterval(function () { check(); }, 100);";
 
 	if (!LogiArxAddUTF8StringAs(_wcsdup(index), _wcsdup(L"index.html"), _wcsdup(L"text/html")))
 	{
@@ -67,7 +68,7 @@ int main()
 	std::cout << config.dump() << std::endl;
 	system("PAUSE");
 
-	while (!(GetKeyState(VK_ESCAPE) & 0x8000))
+	/*while (!(GetKeyState(VK_ESCAPE) & 0x8000))
 	{
 		std::system("cls");
 		std::cout << "Press Tab to enter JSON Data." << std::endl;
@@ -79,6 +80,20 @@ int main()
 			LogiArxSetTagContentById(_wcsdup(L"json"), std::wstring(text.begin(), text.end()).c_str());
 		}
 		Sleep(50);
+	}*/
+
+	while (!(GetKeyState(VK_ESCAPE) & 0x8000))
+	{
+		std::string oText = config.dump();
+		std::string text = "";
+		for (unsigned i = 0; i < oText.size(); i++)
+		{
+			if (oText[i] == '"')
+				text += "\\\"";
+			else
+				text += oText[i];
+		}
+		LogiArxSetTagContentById(_wcsdup(L"json"), std::wstring(text.begin(), text.end()).c_str());
 	}
 
 	LogiArxShutdown();
