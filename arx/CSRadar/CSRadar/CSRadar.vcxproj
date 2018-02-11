@@ -128,6 +128,9 @@
     <None Include="script.js" />
     <None Include="style.css" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\json.hpp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

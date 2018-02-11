@@ -1,9 +1,13 @@
 #include <LogitechGArxControlLib.h>
 #pragma comment(lib, "LogitechGArxControlLib.lib")
 
+#define NOMINMAX
 #include <Windows.h>
 #include <string>
 #include <iostream>
+
+#include "include/json.hpp"
+using json = nlohmann::json;
 
 int main()
 {
@@ -24,19 +28,18 @@ int main()
 		system("PAUSE");
 		return 0;
 	}
-	if (LogiArxAddUTF8StringAs(_wcsdup(style), _wcsdup(L"style.css"), _wcsdup(L"text/css")))
+	if (!LogiArxAddUTF8StringAs(_wcsdup(style), _wcsdup(L"style.css"), _wcsdup(L"text/css")))
 	{
 		std::cout << "Could not load style.css." << std::endl;
 		system("PAUSE");
 		return 0;
 	}
-	if (LogiArxAddUTF8StringAs(_wcsdup(script), _wcsdup(L"script.js"), _wcsdup(L"text/javascript")))
+	if (!LogiArxAddUTF8StringAs(_wcsdup(script), _wcsdup(L"script.js"), _wcsdup(L"text/javascript")))
 	{
 		std::cout << "Could not load script.js." << std::endl;
 		system("PAUSE");
 		return 0;
 	}
-
 
 	/*if (!LogiArxAddFileAs(_wcsdup(L"index.html"), _wcsdup(L"index.html"), _wcsdup(L"")))
 	{
@@ -50,6 +53,19 @@ int main()
 		system("PAUSE");
 		return 0;
 	}
+
+	json config;
+	config["data"] = {};
+
+	json player;
+	player["name"] = "hans";
+	player["x"] = 20;
+	player["y"] = -20;
+	player["enemy"] = true;
+	config["data"].push_back(player);
+
+	std::cout << config.dump() << std::endl;
+	system("PAUSE");
 
 	while (!(GetKeyState(VK_ESCAPE) & 0x8000))
 	{
