@@ -1,17 +1,13 @@
 function check() {
-    //get canvas
     var c = document.getElementById('myCanvas');
     var ctx = c.getContext('2d');
 
-    //clear
     ctx.clearRect(0, 0, 500, 500);
 
-    //Json parse
     var json = document.getElementById('json').innerHTML;
     var jsonParsed = JSON.parse(json);
 
     if (jsonParsed.hasOwnProperty('data')) {
-        //draw the players
         for (i = 0; i < jsonParsed.data.length; i++) {
             ctx.fillStyle = jsonParsed.data[i].enemy ? 'red' : 'green';
             ctx.font = '20px Comic Sans MS';
@@ -20,13 +16,12 @@ function check() {
         }
     }
 
-    //Radar indicator
-    ctx.moveTo(250, 0); //top mid
-    ctx.lineTo(250, 500); //down mid
+    ctx.moveTo(250, 0);
+    ctx.lineTo(250, 500);
     ctx.stroke();
-    ctx.moveTo(0, 250); //left mid
-    ctx.lineTo(500, 250); //right mid
+    ctx.moveTo(0, 250);
+    ctx.lineTo(500, 250);
     ctx.stroke();
 }
 
-setInterval(function () { check(); }, 100);
+setInterval(function () { check(); }, 10);

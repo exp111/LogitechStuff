@@ -1,25 +1,43 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Quelldateien">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Headerdateien">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
-    </Filter>
     <Filter Include="Ressourcendateien">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Headerdateien\include">
+    <Filter Include="not so important stuff">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="not so important stuff\include">
       <UniqueIdentifier>{f5416300-0d61-4527-abe7-7111783f5128}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="not so important stuff\helpers">
+      <UniqueIdentifier>{85558fee-49d3-4a23-9108-228222c959ff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="not so important stuff\sdk">
+      <UniqueIdentifier>{45c53ef1-120a-431e-a41c-b0c96ca24b86}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="very important stuff">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
-      <Filter>Quelldateien</Filter>
+      <Filter>very important stuff</Filter>
+    </ClCompile>
+    <ClCompile Include="helpers\VMTHooks.cpp">
+      <Filter>not so important stuff\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="sdk\CNetVars.cpp">
+      <Filter>not so important stuff\sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="sdk\sdk.cpp">
+      <Filter>not so important stuff\sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="hooks.cpp">
+      <Filter>very important stuff</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -35,7 +53,34 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\json.hpp">
-      <Filter>Headerdateien\include</Filter>
+      <Filter>not so important stuff\include</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers\VMTHooks.h">
+      <Filter>not so important stuff\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\sdk.h">
+      <Filter>not so important stuff\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers\getvfunc.h">
+      <Filter>not so important stuff\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers\findpattern.h">
+      <Filter>not so important stuff\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\CNetVars.h">
+      <Filter>not so important stuff\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\dt_recv2.h">
+      <Filter>not so important stuff\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\dt_common2.h">
+      <Filter>not so important stuff\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\vector.h">
+      <Filter>not so important stuff\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="hooks.h">
+      <Filter>very important stuff</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
