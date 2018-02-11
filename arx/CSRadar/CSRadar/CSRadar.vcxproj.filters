@@ -23,5 +23,11 @@
     <None Include="index.html">
       <Filter>Ressourcendateien</Filter>
     </None>
+    <None Include="style.css">
+      <Filter>Ressourcendateien</Filter>
+    </None>
+    <None Include="script.js">
+      <Filter>Ressourcendateien</Filter>
+    </None>
   </ItemGroup>
 </Project>

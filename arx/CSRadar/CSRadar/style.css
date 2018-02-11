@@ -1,0 +1,18 @@
+* {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+}
+
+canvas {
+    border: 1px solid #d3d3d3;
+    position: absolute;
+    top: 25%;
+    left: 0%;
+    height: 50%;
+    width: 95%;
+    margin: 0 0 0 2.5%;
+}
+
+#json {
+    visibility: hidden;
+}
