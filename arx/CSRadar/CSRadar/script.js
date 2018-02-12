@@ -24,3 +24,9 @@ onPropertyUpdate = function ()
     ctx.lineTo(500, 250);
     ctx.stroke();
 }
+
+var slider = document.getElementById('mySlider');
+slider.addEventListener('touchend', function () {
+    console.log('asd');
+    ACBridge.click('mySlider |' + this.value);
+});
