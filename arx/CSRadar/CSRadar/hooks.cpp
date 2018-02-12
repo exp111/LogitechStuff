@@ -29,7 +29,7 @@ void __stdcall Init()
 
 	const wchar_t* index = L"<!DOCTYPE html><html><head><meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1, target-densityDpi=device-dpi, user-scalable=no' /><link rel='stylesheet' type='text/css' href='style.css'></head><body><canvas id='myCanvas' width=500 height=500></canvas><div id='json'>{}</div><script src='script.js'></script></body></html>";
 	const wchar_t* style = L"* { -webkit-touch-callout: none; -webkit-user-select: none;}canvas { border: 1px solid #d3d3d3; position: absolute; top: 25%; left: 0%; height: 50%; width: 95%; margin: 0 0 0 2.5%;}#json { visibility: hidden; color: white; }";
-	const wchar_t* script = L"onPropertyUpdate = function (){ var c = document.getElementById('myCanvas'); var ctx = c.getContext('2d'); ctx.clearRect(0, 0, 500, 500); var json = document.getElementById('json').innerHTML; var jsonParsed = JSON.parse(json); if (jsonParsed.hasOwnProperty('data')) { for (i = 0; i < jsonParsed.data.length; i++) { ctx.fillStyle = jsonParsed.data[i].enemy ? 'red' : 'green'; ctx.font = '20px Comic Sans MS'; ctx.fillText(jsonParsed.data[i].name, 250 + jsonParsed.data[i].x, 250 + jsonParsed.data[i].y); ctx.fillRect(250 + jsonParsed.data[i].x, 250 + jsonParsed.data[i].y, 25, 25); } } ctx.moveTo(250, 0); ctx.lineTo(250, 500); ctx.stroke(); ctx.moveTo(0, 250); ctx.lineTo(500, 250); ctx.stroke();}";
+	const wchar_t* script = L"onPropertyUpdate = function (){ var c = document.getElementById('myCanvas'); var ctx = c.getContext('2d'); ctx.clearRect(0, 0, 500, 500); var json = document.getElementById('json').innerHTML; var jsonParsed = JSON.parse(json); if (jsonParsed.hasOwnProperty('data')) { for (i = 0; i < jsonParsed.data.length; i++) { ctx.fillStyle = jsonParsed.data[i].enemy ? 'red' : 'green'; ctx.font = '20px Comic Sans MS'; ctx.fillText(jsonParsed.data[i].name, 250 + jsonParsed.data[i].x, 250 - jsonParsed.data[i].y); ctx.fillRect(250 + jsonParsed.data[i].x, 250 - jsonParsed.data[i].y, 25, 25); } } ctx.moveTo(250, 0); ctx.lineTo(250, 500); ctx.stroke(); ctx.moveTo(0, 250); ctx.lineTo(500, 250); ctx.stroke();}";
 
 	if (!LogiArxAddUTF8StringAs(_wcsdup(index), _wcsdup(L"index.html"), _wcsdup(L"text/html")))
 	{
@@ -129,16 +129,15 @@ bool __fastcall hkCreateMove(void * ClientMode, int edx, float input_sample_fram
 		if (!entity->IsAlive())
 			continue;
 
-		Vector pos = entity->GetOrigin() - g_LocalPlayer->GetOrigin(); //TODO
-		/*Vector viewAngles;
+		//Vector pos = entity->GetOrigin() - g_LocalPlayer->GetOrigin(); //TODO
+		Vector viewAngles;
 		EngineClient->GetViewAngles(viewAngles);
 		Vector pos; //= WorldToRadar(entity->GetOrigin(), localPlayerOrigin, viewAngles, 100);
 		pos = entity->GetOrigin() - localPlayerOrigin;
 		//normalize and * by scale
 		//pos = pos.Normalized();
 		//pos *=
-		pos = RotatePoint(pos, Vector(0, 0, 0), viewAngles.y + 90); //rotate around the null vector (radar center); -90 so we get have the right direction
-		//negate vector coz that's how we roll*/
+		pos = RotatePoint(pos, Vector(0, 0, 0), -(viewAngles.y - 90)); //rotate around the null vector (radar center); -90 so we have the right direction; *-1 cause it's retarded
 		if ((pos.x < -250 || pos.x > 250) || (pos.y < -250 || pos.y > 250)) //if we're out of bounds no need to send
 			continue;
 

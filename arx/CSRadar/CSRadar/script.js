@@ -12,8 +12,8 @@ onPropertyUpdate = function ()
         for (i = 0; i < jsonParsed.data.length; i++) {
             ctx.fillStyle = jsonParsed.data[i].enemy ? 'red' : 'green';
             ctx.font = '20px Comic Sans MS';
-            ctx.fillText(jsonParsed.data[i].name, 250 + jsonParsed.data[i].x, 250 + jsonParsed.data[i].y);
-            ctx.fillRect(250 + jsonParsed.data[i].x, 250 + jsonParsed.data[i].y, 25, 25);
+            ctx.fillText(jsonParsed.data[i].name, 250 + jsonParsed.data[i].x, 250 - jsonParsed.data[i].y);
+            ctx.fillRect(250 + jsonParsed.data[i].x, 250 - jsonParsed.data[i].y, 25, 25);
         }
     }
 
