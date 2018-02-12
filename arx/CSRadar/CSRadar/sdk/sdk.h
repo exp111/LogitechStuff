@@ -67,13 +67,6 @@ public:
 		typedef bool(__thiscall* OriginalFn)(void*);
 		return getvfunc<OriginalFn>(pNetworkable, 9)(pNetworkable);
 	}
-	int GetIndex()
-	{
-		void* pNetworkable = (void*)(this + 0x8);
-		typedef int(*oGetIndex)(void*);
-		return getvfunc<oGetIndex>(pNetworkable, 10)(this);
-	}
-	player_info_t GetPlayerInfo();
 
 	//CBaseEntity
 	BYTE GetLifeState()
@@ -143,13 +136,7 @@ public:
 	void GetViewAngles(Vector& va)
 	{
 		typedef void(__thiscall* OriginalFn)(void*, Vector& va);
-		return getvfunc<OriginalFn>(this, 19)(this, va);
-	}
-
-	int GetMaxClients(void)
-	{
-		typedef int(__thiscall* OriginalFn)(void*);
-		return getvfunc<OriginalFn>(this, 21)(this);
+		return getvfunc<OriginalFn>(this, 18)(this, va);
 	}
 
 	bool IsInGame(void)

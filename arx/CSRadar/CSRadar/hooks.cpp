@@ -29,7 +29,7 @@ void __stdcall Init()
 
 	const wchar_t* index = L"<!DOCTYPE html><html><head><meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1, target-densityDpi=device-dpi, user-scalable=no' /><link rel='stylesheet' type='text/css' href='style.css'></head><body><canvas id='myCanvas' width=500 height=500></canvas><div id='json'>{}</div><script src='script.js'></script></body></html>";
 	const wchar_t* style = L"* { -webkit-touch-callout: none; -webkit-user-select: none;}canvas { border: 1px solid #d3d3d3; position: absolute; top: 25%; left: 0%; height: 50%; width: 95%; margin: 0 0 0 2.5%;}#json { visibility: hidden; color: white; }";
-	const wchar_t* script = L"function check() { var c = document.getElementById('myCanvas'); var ctx = c.getContext('2d'); ctx.clearRect(0, 0, 500, 500); var json = document.getElementById('json').innerHTML; var jsonParsed = JSON.parse(json); if (jsonParsed.hasOwnProperty('data')) { for (i = 0; i < jsonParsed.data.length; i++) { ctx.fillStyle = jsonParsed.data[i].enemy ? 'red' : 'green'; ctx.font = '20px Comic Sans MS'; ctx.fillText(jsonParsed.data[i].name, 250 + jsonParsed.data[i].x, 250 + jsonParsed.data[i].y); ctx.fillRect(250 + jsonParsed.data[i].x, 250 + jsonParsed.data[i].y, 25, 25); } } ctx.moveTo(250, 0); ctx.lineTo(250, 500); ctx.stroke(); ctx.moveTo(0, 250); ctx.lineTo(500, 250); ctx.stroke();}setInterval(function () { check(); }, 10);";
+	const wchar_t* script = L"onPropertyUpdate = function (){ var c = document.getElementById('myCanvas'); var ctx = c.getContext('2d'); ctx.clearRect(0, 0, 500, 500); var json = document.getElementById('json').innerHTML; var jsonParsed = JSON.parse(json); if (jsonParsed.hasOwnProperty('data')) { for (i = 0; i < jsonParsed.data.length; i++) { ctx.fillStyle = jsonParsed.data[i].enemy ? 'red' : 'green'; ctx.font = '20px Comic Sans MS'; ctx.fillText(jsonParsed.data[i].name, 250 + jsonParsed.data[i].x, 250 + jsonParsed.data[i].y); ctx.fillRect(250 + jsonParsed.data[i].x, 250 + jsonParsed.data[i].y, 25, 25); } } ctx.moveTo(250, 0); ctx.lineTo(250, 500); ctx.stroke(); ctx.moveTo(0, 250); ctx.lineTo(500, 250); ctx.stroke();}";
 
 	if (!LogiArxAddUTF8StringAs(_wcsdup(index), _wcsdup(L"index.html"), _wcsdup(L"text/html")))
 	{
@@ -78,6 +78,21 @@ void __stdcall Init()
 	clientModeHook->Rehook();
 }
 
+Vector RotatePoint(Vector pointToRotate, Vector centerPoint, float angle, bool angleInRadians = false)
+{
+	if (!angleInRadians)
+		angle = (float)(angle * (PI / 180.f));
+	float cosTheta = (float)cosf(angle);
+	float sinTheta = (float)sinf(angle);
+	Vector returnVec = Vector(
+		cosTheta * (pointToRotate.x - centerPoint.x) - sinTheta * (pointToRotate.y - centerPoint.y),
+		sinTheta * (pointToRotate.x - centerPoint.x) + cosTheta * (pointToRotate.y - centerPoint.y),
+		0
+	);
+	returnVec += centerPoint;
+	return returnVec;
+}
+
 bool __fastcall hkCreateMove(void * ClientMode, int edx, float input_sample_frametime, void * cmd)
 {
 	toolkit::VMTManager& hook = toolkit::VMTManager::GetHook(ClientMode); //Get a pointer to the instance of your VMTManager with the function GetHook.
@@ -91,10 +106,12 @@ bool __fastcall hkCreateMove(void * ClientMode, int edx, float input_sample_fram
 	if (!g_LocalPlayer || !EngineClient->IsInGame())
 		return oCreateMove;
 
-	
+
 	//do stuff
 	json config;
 	config["data"] = {};
+
+	Vector localPlayerOrigin = g_LocalPlayer->GetOrigin();
 
 	for (int i = 1; i < EntityList->GetHighestEntityIndex() && i <= 64; i++)
 	{
@@ -102,8 +119,6 @@ bool __fastcall hkCreateMove(void * ClientMode, int edx, float input_sample_fram
 
 		if (!entity)
 			continue;
-
-		Vector pos = entity->GetOrigin() - g_LocalPlayer->GetOrigin(); //TODO
 
 		if (entity == g_LocalPlayer)
 			continue;
@@ -114,17 +129,31 @@ bool __fastcall hkCreateMove(void * ClientMode, int edx, float input_sample_fram
 		if (!entity->IsAlive())
 			continue;
 
-		//player_info_t info = entity->GetPlayerInfo();
+		Vector pos = entity->GetOrigin() - g_LocalPlayer->GetOrigin(); //TODO
+		/*Vector viewAngles;
+		EngineClient->GetViewAngles(viewAngles);
+		Vector pos; //= WorldToRadar(entity->GetOrigin(), localPlayerOrigin, viewAngles, 100);
+		pos = entity->GetOrigin() - localPlayerOrigin;
+		//normalize and * by scale
+		//pos = pos.Normalized();
+		//pos *=
+		pos = RotatePoint(pos, Vector(0, 0, 0), viewAngles.y + 90); //rotate around the null vector (radar center); -90 so we get have the right direction
+		//negate vector coz that's how we roll*/
+		if ((pos.x < -250 || pos.x > 250) || (pos.y < -250 || pos.y > 250)) //if we're out of bounds no need to send
+			continue;
+
+		player_info_t info;
+		EngineClient->GetPlayerInfo(i, &info);
 
 		//json shit
 		json player;
-		//player["name"] = info.szName;
-		player["name"] = "a"; //TODO
+		player["name"] = info.szName;
 		player["x"] = (int)pos.x;
 		player["y"] = (int)pos.y;
 		player["enemy"] = entity->GetTeam() != g_LocalPlayer->GetTeam();
 		config["data"].push_back(player);
 	}
+
 	std::string oText = config.dump();
 	std::string text = "";
 	for (unsigned i = 0; i < oText.size(); i++)

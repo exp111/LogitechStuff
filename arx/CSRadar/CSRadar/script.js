@@ -1,4 +1,5 @@
-function check() {
+onPropertyUpdate = function ()
+{
     var c = document.getElementById('myCanvas');
     var ctx = c.getContext('2d');
 
@@ -23,5 +24,3 @@ function check() {
     ctx.lineTo(500, 250);
     ctx.stroke();
 }
-
-setInterval(function () { check(); }, 10);
