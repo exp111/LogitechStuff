@@ -149,14 +149,26 @@ void LCDScreen::ChangeChannelCursorPosition(int changeValue)
 
 void LCDScreen::SwitchChannel()
 {
-	uint64 serverConnectionHandlerID = ts3Functions.getCurrentServerConnectionHandlerID();
-	anyID mClientID;
-	uint64 mChannelID;
-	ts3Functions.getClientID(serverConnectionHandlerID, &mClientID);
-	ts3Functions.getChannelOfClient(serverConnectionHandlerID, mClientID, &mChannelID);
-	if (mChannelID == selectedChannel)
-		return;
-	ts3Functions.requestClientMove(serverConnectionHandlerID, mClientID, selectedChannel, "", NULL);
+	if (hasSelected)
+	{
+		uint64 serverConnectionHandlerID = ts3Functions.getCurrentServerConnectionHandlerID();
+		uint64 channelID;
+		ts3Functions.getChannelOfClient(serverConnectionHandlerID, selectedClient, &channelID);
+		if (channelID == selectedChannel)
+			return;
+		ts3Functions.requestClientMove(serverConnectionHandlerID, selectedClient, selectedChannel, "", NULL);
+	}
+	else
+	{
+		uint64 serverConnectionHandlerID = ts3Functions.getCurrentServerConnectionHandlerID();
+		anyID mClientID;
+		uint64 mChannelID;
+		ts3Functions.getClientID(serverConnectionHandlerID, &mClientID);
+		ts3Functions.getChannelOfClient(serverConnectionHandlerID, mClientID, &mChannelID);
+		if (mChannelID == selectedChannel)
+			return;
+		ts3Functions.requestClientMove(serverConnectionHandlerID, mClientID, selectedChannel, "", NULL);
+	}
 }
 
 void LCDScreen::SelectClient()
@@ -178,7 +190,9 @@ void LCDScreen::SelectClient()
 			ts3Functions.requestClientKickFromServer(serverConnectionHandlerID, selectedClient, "Just cause", NULL);
 			break;
 		case MOVE_TO_CHANNEL:
-			//TODO
+			currentMode = CHANNELS;
+			Update();
+			return;
 			break;
 		case MOVE_HERE:
 		{
@@ -441,9 +455,19 @@ void LCDScreen::ButtonMenuEvent()
 		currentMode = lastMode;
 		break;
 	case CHANNELS:
-		menuCursorPosition = 0;
-		lastMode = currentMode;
-		currentMode = MENU;
+		if (hasSelected)
+		{
+			menuCursorPosition = 0;
+			lastMode = ADMIN;
+			currentMode = MENU;
+			hasSelected = false;
+		}
+		else
+		{
+			menuCursorPosition = 0;
+			lastMode = currentMode;
+			currentMode = MENU;
+		}
 		break;
 	case ADMIN:
 		menuCursorPosition = 0;
@@ -451,6 +475,7 @@ void LCDScreen::ButtonMenuEvent()
 		currentMode = MENU;
 		break;
 	case HELP:
+		menuCursorPosition = 0;
 		lastMode = currentMode;
 		currentMode = MENU;
 	default:
@@ -463,9 +488,14 @@ void LCDScreen::ButtonMenuEvent()
 
 void LCDScreen::ButtonCancelEvent()
 {
-	if (currentMode == ADMIN && hasSelected) //return to admin menu from selection menu
+	if (hasSelected) 
 	{
-		hasSelected = false;
+		if (currentMode == ADMIN) //return to admin menu from selection menu
+			hasSelected = false;
+		else if (currentMode == CHANNELS)
+		{
+			currentMode = ADMIN;
+		}
 	}
 	else
 	{
@@ -667,7 +697,18 @@ void LCDScreen::Update()
 	}
 	case CHANNELS:
 	{
-		LogiLcdColorSetTitle(_wcsdup(L"Channel Switcher"), red, green, blue);
+		if (!hasSelected)
+		{
+			LogiLcdColorSetTitle(_wcsdup(L"Channel Switcher"), red, green, blue);
+		}
+		else
+		{
+			std::string text = "Move: ";
+			char* clientName = new char[64];
+			ts3Functions.getClientVariableAsString(serverConnectionHandlerID, selectedClient, CLIENT_NICKNAME, &clientName);
+			text += std::string(clientName) + " (" + std::to_string(selectedClient) + ")";
+			LogiLcdColorSetTitle(_wcsdup(std::wstring(text.begin(), text.end()).c_str()), red, green, blue);
+		}
 
 		anyID clientID = 0;
 		uint64 channelID = 0;

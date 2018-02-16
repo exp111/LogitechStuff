@@ -84,7 +84,7 @@ private:
 		MUTE,
 		MAX_ADMIN_MENU_ITEMS
 	};
-	const std::vector<std::string> adminMenuItems = { "Kick from Channel", "Kick from Server", "Move to Channel (WIP)", "Move to my Channel", "Ban Temporary", "Ban Permanent", "Mute (Buggy)" };
+	const std::vector<std::string> adminMenuItems = { "Kick from Channel", "Kick from Server", "Move to Channel", "Move to my Channel", "Ban Temporary", "Ban Permanent", "Mute (Buggy)" };
 	anyID selectedClient = 0;
 	unsigned clientCursorPosition = 0;
 	bool hasSelected = false;
