@@ -32,7 +32,7 @@ int WinMain(HINSTANCE hInstance,
 	{
 		LogiLcdColorSetTitle(_wcsdup(L"OK for Rainbow"));
 		LogiLcdColorSetText(0, _wcsdup(L"Left for slower change"));
-		LogiLcdColorSetText(1, _wcsdup(L"Rgith for faster change"));
+		LogiLcdColorSetText(1, _wcsdup(L"Rigth for faster change"));
 		LogiLcdColorSetText(7, _wcsdup(L"Cancel to quit"));
 
 		//Check Buttons
