@@ -2,6 +2,8 @@
 
 #include <string>
 #include <vector>
+#include <sstream>
+#include <iomanip>
 #include "teamspeak/public_errors.h"
 #include "teamspeak/public_errors_rare.h"
 #include "teamspeak/public_definitions.h"
@@ -52,10 +54,11 @@ private:
 		MUTE_OUTPUT = 1,
 		SWITCH_CHANNEL,
 		ADMIN_MENU,
+		CLIENT_INFO,
 		HELP,
 		MAX_MENU_ITEMS
 	};
-	const std::vector<std::string> menuItems = { "Mute Input", "Mute Output", "Switch Channel", "Admin Menu", "Help" };
+	const std::vector<std::string> menuItems = { "Mute Input", "Mute Output", "Switch Channel", "Admin Menu", "Client Info", "Help" };
 	unsigned menuCursorPosition = 0;
 
 	uint64 selectedChannel = 0;

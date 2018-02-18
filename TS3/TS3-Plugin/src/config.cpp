@@ -96,6 +96,12 @@ void LCDScreen::SelectActiveItem()
 		currentMode = ADMIN;
 		Update();
 		break;
+	case CLIENT_INFO:
+		clientCursorPosition = 0;
+		adminMenuCursorPosition = 0;
+		currentMode = CLIENT_INFO;
+		Update();
+		break;
 	case HELP:
 		currentMode = HELP;
 		Update();
@@ -103,6 +109,8 @@ void LCDScreen::SelectActiveItem()
 	default:
 		break;
 	}
+
+	hasSelected = false;
 }
 
 void LCDScreen::ChangeMenuCursorPosition(int changeValue)
@@ -348,6 +356,10 @@ void LCDScreen::ButtonUpEvent()
 		else
 			ChangeClientCursorPosition(-1);
 		break;
+	case CLIENT_INFO:
+		if (!hasSelected)
+			ChangeClientCursorPosition(-1);
+		break;
 	default:
 		break;
 	}
@@ -374,6 +386,10 @@ void LCDScreen::ButtonDownEvent()
 		if (hasSelected)
 			ChangeAdminMenuCursorPosition(1);
 		else
+			ChangeClientCursorPosition(1);
+		break;
+	case CLIENT_INFO:
+		if (!hasSelected)
 			ChangeClientCursorPosition(1);
 		break;
 	default:
@@ -437,6 +453,14 @@ void LCDScreen::ButtonOKEvent()
 	case ADMIN:
 		SelectClient();
 		break;
+	case CLIENT_INFO:
+		if (!hasSelected)
+		{
+			hasSelected = true;
+			adminMenuCursorPosition = 0;
+		}
+		Update();
+		break;
 	default:
 		break;
 	}
@@ -474,6 +498,11 @@ void LCDScreen::ButtonMenuEvent()
 		lastMode = currentMode;
 		currentMode = MENU;
 		break;
+	case CLIENT_INFO:
+		menuCursorPosition = 0;
+		lastMode = currentMode;
+		currentMode = MENU;
+		break;
 	case HELP:
 		menuCursorPosition = 0;
 		lastMode = currentMode;
@@ -490,7 +519,7 @@ void LCDScreen::ButtonCancelEvent()
 {
 	if (hasSelected) 
 	{
-		if (currentMode == ADMIN) //return to admin menu from selection menu
+		if (currentMode == ADMIN || currentMode == CLIENT_INFO) //return to admin menu from selection menu
 			hasSelected = false;
 		else if (currentMode == CHANNELS)
 		{
@@ -812,7 +841,7 @@ void LCDScreen::Update()
 			text += std::string(clientName) + " (" + std::to_string(selectedClient) + ")";
 			LogiLcdColorSetText(0, _wcsdup(std::wstring(text.begin(), text.end()).c_str()));
 
-			for (unsigned i = 0; i < MAX_ADMIN_MENU_ITEMS; i++) //Empty the other lines
+			for (unsigned i = 0; i < MAX_ADMIN_MENU_ITEMS; i++)
 			{
 				bool active = adminMenuCursorPosition == i;
 				int red = active ? 255 : 255;
@@ -835,6 +864,149 @@ void LCDScreen::Update()
 			for (unsigned i = MAX_ADMIN_MENU_ITEMS; i < 8; i++) //Empty the other lines
 			{
 				LogiLcdColorSetText(i + 1, _wcsdup(L""));
+			}
+		}
+		break;
+	}
+	case CLIENT_INFO:
+	{
+		LogiLcdColorSetTitle(_wcsdup(L"Client Info"), red, green, blue);
+		if (!hasSelected)
+		{
+			anyID clientID = 0;
+			uint64 channelID = 0;
+			ts3Functions.getClientID(serverConnectionHandlerID, &clientID);
+
+			anyID* clientList;
+			unsigned count = 0;
+			if (ts3Functions.getClientList(serverConnectionHandlerID, &clientList) == ERROR_ok)
+			{
+				for (unsigned i = 0; clientList[i]; i++)
+				{
+					count++;
+				}
+
+				unsigned clientCount = 0; //as we can't print at i we need a seperate counter
+				unsigned start = ((int)clientCursorPosition) - 3 < 0 ? 0 : clientCursorPosition + 5 > count ? ((int)count) - 8 < 0 ? 0 : count - 8 : clientCursorPosition - 3; //so we don't go under 0 and don't go to far
+				unsigned end = clientCursorPosition + 5 > count ? count : clientCursorPosition + 5 < 8 ? 8 : clientCursorPosition + 5; //don't go over the limit and don't stay to small
+				for (unsigned i = start; i < count && i < end; i++)
+				{
+					anyID current = clientList[i];
+
+					bool active = clientCursorPosition == i;
+					if (active)
+						selectedClient = clientList[i];
+					bool isMe = current == clientID;
+
+					int red = active ? 255 : isMe ? 255 : 255;
+					int green = active ? 255 : isMe ? 0 : 255;
+					int blue = active ? 0 : isMe ? 0 : 255;
+
+					char* clientName = new char[64];
+					ts3Functions.getClientVariableAsString(serverConnectionHandlerID, current, CLIENT_NICKNAME, &clientName);
+
+					std::string text = std::string(clientName) + " (" + std::to_string(clientList[i]) + ")";
+					LogiLcdColorSetText(clientCount, _wcsdup(std::wstring(text.begin(), text.end()).c_str()), red, green, blue);
+					clientCount++;
+				}
+			}
+
+			for (unsigned i = count; i < 8; i++) //Empty the other lines
+			{
+				LogiLcdColorSetText(i, _wcsdup(L""));
+			}
+		}
+		else
+		{
+			for (unsigned i = 0; i < 9; i++) //Empty the other lines
+			{
+				LogiLcdColorSetText(i, _wcsdup(L""));
+			}
+			LogiLcdColorSetText(1, _wcsdup(L"Press OK to refresh"));
+
+
+			std::string text = "Selected: ";
+			char* clientName = new char[64];
+			ts3Functions.getClientVariableAsString(serverConnectionHandlerID, selectedClient, CLIENT_NICKNAME, &clientName);
+			text += std::string(clientName) + " (" + std::to_string(selectedClient) + ")";
+			LogiLcdColorSetText(0, _wcsdup(std::wstring(text.begin(), text.end()).c_str()));
+
+			//Request Connection Variables
+			ts3Functions.requestConnectionInfo(serverConnectionHandlerID, selectedClient, NULL);
+			
+			//Connected Time
+			uint64 connectedTime = 0;
+			ts3Functions.getConnectionVariableAsUInt64(serverConnectionHandlerID, selectedClient, CONNECTION_CONNECTED_TIME, &connectedTime);
+			if (connectedTime > 0) //Format
+			{
+				int years = connectedTime / 1000 / 60 / 60 / 24 / 365;
+				int days = connectedTime / 1000 / 60 / 60 / 24 % 365;
+				int hours = connectedTime / 1000 / 60 / 60 % 24;
+				int minutes = connectedTime / 1000 / 60 % 60;
+				int seconds = connectedTime / 1000 % 60;
+
+				std::string connectionText = "";
+
+				if (years > 0)
+					connectionText += std::to_string(years) + "a ";
+				if (days > 0)
+					connectionText += std::to_string(days) + "d ";
+				if (hours > 0)
+					connectionText += std::to_string(hours) + "h ";
+				if (minutes > 0)
+					connectionText += std::to_string(minutes) + "m ";
+				connectionText += std::to_string(seconds) + "s";
+
+				std::string text = "Conntected since: " + connectionText;
+
+				LogiLcdColorSetText(1, _wcsdup(std::wstring(text.begin(), text.end()).c_str()));
+			}
+
+			//Idle Time
+			uint64 idleTime = 0;
+			ts3Functions.getConnectionVariableAsUInt64(serverConnectionHandlerID, selectedClient, CONNECTION_IDLE_TIME, &idleTime);
+
+			if (idleTime > 0) //Format
+			{
+				int years = idleTime / 1000 / 60 / 60 / 24 / 365;
+				int days = idleTime / 1000 / 60 / 60 / 24 % 365;
+				int hours = idleTime / 1000 / 60 / 60 % 24;
+				int minutes = idleTime / 1000 / 60 % 60;
+				int seconds = idleTime / 1000 % 60;
+
+				std::string idleText = "";
+
+				if (years > 0)
+					idleText += std::to_string(years) + "a ";
+				if (days > 0)
+					idleText += std::to_string(days) + "d ";
+				if (hours > 0)
+					idleText += std::to_string(hours) + "h ";
+				if (minutes > 0)
+					idleText += std::to_string(minutes) + "m ";
+				idleText += std::to_string(seconds) + "s";
+
+				std::string text = "Idle Time: " + idleText;
+
+				LogiLcdColorSetText(2, _wcsdup(std::wstring(text.begin(), text.end()).c_str()));
+			}
+
+			//Ping
+			uint64 ping = 0;
+			double pingDeviation = 0;
+			ts3Functions.getConnectionVariableAsUInt64(serverConnectionHandlerID, selectedClient, CONNECTION_PING, &ping);
+			ts3Functions.getConnectionVariableAsDouble(serverConnectionHandlerID, selectedClient, CONNECTION_PING_DEVIATION, &pingDeviation);
+
+			if (ping > 0)
+			{
+				std::string text = "Ping: ";
+
+				std::ostringstream pingD;
+				pingD << ping << " +- " << std::fixed << std::setprecision(1) << pingDeviation;
+				
+				text += pingD.str();
+
+				LogiLcdColorSetText(3, _wcsdup(std::wstring(text.begin(), text.end()).c_str()));
 			}
 		}
 		break;
