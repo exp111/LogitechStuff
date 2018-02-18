@@ -7,58 +7,62 @@
     <x>0</x>
     <y>0</y>
     <width>284</width>
-    <height>205</height>
+    <height>132</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Test Plugin</string>
   </property>
-  <widget class="QPushButton" name="pushButton">
+  <widget class="QPushButton" name="closeButton">
    <property name="geometry">
     <rect>
-     <x>24</x>
-     <y>140</y>
+     <x>90</x>
+     <y>100</y>
      <width>101</width>
      <height>23</height>
     </rect>
    </property>
    <property name="text">
-    <string>Annehmen</string>
-   </property>
-   <property name="checkable">
-    <bool>false</bool>
+    <string>Close</string>
    </property>
   </widget>
-  <widget class="QCheckBox" name="checkBox">
+  <widget class="QPushButton" name="initButton">
    <property name="geometry">
     <rect>
-     <x>40</x>
-     <y>50</y>
-     <width>70</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="toolTip">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;shit&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-   </property>
-   <property name="toolTipDuration">
-    <number>10</number>
-   </property>
-   <property name="text">
-    <string>Test</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="pushButton_2">
-   <property name="geometry">
-    <rect>
-     <x>150</x>
-     <y>140</y>
+     <x>30</x>
+     <y>40</y>
      <width>101</width>
      <height>23</height>
     </rect>
    </property>
    <property name="text">
-    <string>Abbrechen</string>
+    <string>Init</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="shutdownButton">
+   <property name="geometry">
+    <rect>
+     <x>144</x>
+     <y>40</y>
+     <width>111</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Shutdown</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label">
+   <property name="geometry">
+    <rect>
+     <x>70</x>
+     <y>10</y>
+     <width>181</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Manual Init/Shutdown</string>
    </property>
   </widget>
  </widget>
@@ -66,55 +70,56 @@
  <resources/>
  <connections>
   <connection>
-   <sender>pushButton</sender>
+   <sender>closeButton</sender>
    <signal>clicked()</signal>
    <receiver>QtConfig</receiver>
-   <slot>saveToConfig()</slot>
+   <slot>close()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>197</x>
-     <y>251</y>
+     <y>151</y>
     </hint>
     <hint type="destinationlabel">
+     <x>141</x>
+     <y>102</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>initButton</sender>
+   <signal>clicked()</signal>
+   <receiver>QtConfig</receiver>
+   <slot>Init()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>80</x>
+     <y>51</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>141</x>
+     <y>65</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>shutdownButton</sender>
+   <signal>clicked()</signal>
+   <receiver>QtConfig</receiver>
+   <slot>Shutdown()</slot>
+   <hints>
+    <hint type="sourcelabel">
      <x>199</x>
-     <y>149</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>pushButton_2</sender>
-   <signal>clicked()</signal>
-   <receiver>QtConfig</receiver>
-   <slot>close()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>197</x>
-     <y>151</y>
+     <y>51</y>
     </hint>
     <hint type="destinationlabel">
      <x>141</x>
-     <y>102</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>pushButton</sender>
-   <signal>clicked()</signal>
-   <receiver>QtConfig</receiver>
-   <slot>close()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>87</x>
-     <y>151</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>141</x>
-     <y>102</y>
+     <y>65</y>
     </hint>
    </hints>
   </connection>
  </connections>
  <slots>
-  <slot>saveToConfig()</slot>
+  <slot>Shutdown()</slot>
+  <slot>Init()</slot>
  </slots>
 </ui>

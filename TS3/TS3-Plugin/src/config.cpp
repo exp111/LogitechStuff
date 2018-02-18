@@ -1,8 +1,6 @@
 #include "config.h"
 #include "plugin.h"
 
-Config* config = new Config;
-
 LCDScreen* screen = new LCDScreen();
 
 void LCDScreen::AddMessage(const char * msg, anyID sender, const char* senderName)
@@ -572,6 +570,8 @@ void LCDScreen::Init()
 
 void LCDScreen::Shutdown()
 {
+	TerminateThread(controlThread, 0);
+
 	LogiLcdShutdown();
 
 	isActive = false;

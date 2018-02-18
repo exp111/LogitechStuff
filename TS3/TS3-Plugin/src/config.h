@@ -12,18 +12,6 @@
 #include "ts3_functions.h"
 #include <LogitechLCDLib.h>
 
-class Config
-{
-public:
-	Config() { };
-	~Config() { };
-
-	bool testBool = false;
-	unsigned pos = 0;
-};
-
-extern Config* config;
-
 enum LCD_MODES
 {
 	NORMAL = 0,

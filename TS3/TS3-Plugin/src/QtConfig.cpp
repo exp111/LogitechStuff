@@ -6,14 +6,18 @@ QtConfig::QtConfig(QWidget *parent)
 	: QMainWindow(parent)
 {
 	ui.setupUi(this);
-	ui.checkBox->setChecked(config->testBool);
 }
 
 QtConfig::~QtConfig()
 {
 }
 
-void QtConfig::saveToConfig()
+void QtConfig::Init()
 {
-	config->testBool = ui.checkBox->isChecked();
+	screen->Init();
+}
+
+void QtConfig::Shutdown()
+{
+	screen->Shutdown();
 }

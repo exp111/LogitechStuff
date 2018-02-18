@@ -12,7 +12,8 @@ public:
 	QtConfig(QWidget *parent = Q_NULLPTR);
 	~QtConfig();
 public slots:
-	void saveToConfig();
+	void Init();
+	void Shutdown();
 private:
 	Ui::QtConfig ui;
 };
