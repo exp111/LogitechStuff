@@ -77,6 +77,8 @@ void LCDScreen::ChangeCursorPosition(int changeValue)
 
 void LCDScreen::SelectActiveItem()
 {
+	hasSelected = false;
+
 	switch (menuCursorPosition)
 	{
 	case MUTE_INPUT:
@@ -109,8 +111,6 @@ void LCDScreen::SelectActiveItem()
 	default:
 		break;
 	}
-
-	hasSelected = false;
 }
 
 void LCDScreen::ChangeMenuCursorPosition(int changeValue)
@@ -1007,6 +1007,17 @@ void LCDScreen::Update()
 				text += pingD.str();
 
 				LogiLcdColorSetText(3, _wcsdup(std::wstring(text.begin(), text.end()).c_str()));
+			}
+
+			//IP
+			char* ip = new char[64];
+			if (ts3Functions.getConnectionVariableAsString(serverConnectionHandlerID, selectedClient, CONNECTION_CLIENT_IP, &ip) == ERROR_ok)
+			{
+				std::string text = "IP: ";
+
+				text += ip;
+
+				LogiLcdColorSetText(4, _wcsdup(std::wstring(text.begin(), text.end()).c_str()));
 			}
 		}
 		break;
