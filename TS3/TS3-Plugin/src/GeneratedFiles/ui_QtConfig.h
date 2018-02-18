@@ -13,8 +13,8 @@
 #include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QButtonGroup>
-#include <QtWidgets/QCheckBox>
 #include <QtWidgets/QHeaderView>
+#include <QtWidgets/QLabel>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QWidget>
 
@@ -23,31 +23,33 @@ QT_BEGIN_NAMESPACE
 class Ui_QtConfig
 {
 public:
-    QPushButton *pushButton;
-    QCheckBox *checkBox;
-    QPushButton *pushButton_2;
+    QPushButton *closeButton;
+    QPushButton *initButton;
+    QPushButton *shutdownButton;
+    QLabel *label;
 
     void setupUi(QWidget *QtConfig)
     {
         if (QtConfig->objectName().isEmpty())
             QtConfig->setObjectName(QStringLiteral("QtConfig"));
-        QtConfig->resize(284, 205);
-        pushButton = new QPushButton(QtConfig);
-        pushButton->setObjectName(QStringLiteral("pushButton"));
-        pushButton->setGeometry(QRect(24, 140, 101, 23));
-        pushButton->setCheckable(false);
-        checkBox = new QCheckBox(QtConfig);
-        checkBox->setObjectName(QStringLiteral("checkBox"));
-        checkBox->setGeometry(QRect(40, 50, 70, 17));
-        checkBox->setToolTipDuration(10);
-        pushButton_2 = new QPushButton(QtConfig);
-        pushButton_2->setObjectName(QStringLiteral("pushButton_2"));
-        pushButton_2->setGeometry(QRect(150, 140, 101, 23));
+        QtConfig->resize(284, 132);
+        closeButton = new QPushButton(QtConfig);
+        closeButton->setObjectName(QStringLiteral("closeButton"));
+        closeButton->setGeometry(QRect(90, 100, 101, 23));
+        initButton = new QPushButton(QtConfig);
+        initButton->setObjectName(QStringLiteral("initButton"));
+        initButton->setGeometry(QRect(30, 40, 101, 23));
+        shutdownButton = new QPushButton(QtConfig);
+        shutdownButton->setObjectName(QStringLiteral("shutdownButton"));
+        shutdownButton->setGeometry(QRect(144, 40, 111, 23));
+        label = new QLabel(QtConfig);
+        label->setObjectName(QStringLiteral("label"));
+        label->setGeometry(QRect(70, 10, 181, 21));
 
         retranslateUi(QtConfig);
-        QObject::connect(pushButton, SIGNAL(clicked()), QtConfig, SLOT(saveToConfig()));
-        QObject::connect(pushButton_2, SIGNAL(clicked()), QtConfig, SLOT(close()));
-        QObject::connect(pushButton, SIGNAL(clicked()), QtConfig, SLOT(close()));
+        QObject::connect(closeButton, SIGNAL(clicked()), QtConfig, SLOT(close()));
+        QObject::connect(initButton, SIGNAL(clicked()), QtConfig, SLOT(Init()));
+        QObject::connect(shutdownButton, SIGNAL(clicked()), QtConfig, SLOT(Shutdown()));
 
         QMetaObject::connectSlotsByName(QtConfig);
     } // setupUi
@@ -55,12 +57,10 @@ public:
     void retranslateUi(QWidget *QtConfig)
     {
         QtConfig->setWindowTitle(QApplication::translate("QtConfig", "Test Plugin", Q_NULLPTR));
-        pushButton->setText(QApplication::translate("QtConfig", "Annehmen", Q_NULLPTR));
-#ifndef QT_NO_TOOLTIP
-        checkBox->setToolTip(QApplication::translate("QtConfig", "<html><head/><body><p><span style=\" font-weight:600;\">shit</span></p></body></html>", Q_NULLPTR));
-#endif // QT_NO_TOOLTIP
-        checkBox->setText(QApplication::translate("QtConfig", "Test", Q_NULLPTR));
-        pushButton_2->setText(QApplication::translate("QtConfig", "Abbrechen", Q_NULLPTR));
+        closeButton->setText(QApplication::translate("QtConfig", "Close", Q_NULLPTR));
+        initButton->setText(QApplication::translate("QtConfig", "Init", Q_NULLPTR));
+        shutdownButton->setText(QApplication::translate("QtConfig", "Shutdown", Q_NULLPTR));
+        label->setText(QApplication::translate("QtConfig", "Manual Init/Shutdown", Q_NULLPTR));
     } // retranslateUi
 
 };
