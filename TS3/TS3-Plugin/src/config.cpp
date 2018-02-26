@@ -918,12 +918,10 @@ void LCDScreen::Update()
 		}
 		else
 		{
-			for (unsigned i = 0; i < 9; i++) //Empty the other lines
+			for (unsigned i = 0; i < 8; i++) //Empty the other lines
 			{
 				LogiLcdColorSetText(i, _wcsdup(L""));
 			}
-			LogiLcdColorSetText(1, _wcsdup(L"Press OK to refresh"));
-
 
 			std::string text = "Selected: ";
 			char* clientName = new char[64];
@@ -931,93 +929,104 @@ void LCDScreen::Update()
 			text += std::string(clientName) + " (" + std::to_string(selectedClient) + ")";
 			LogiLcdColorSetText(0, _wcsdup(std::wstring(text.begin(), text.end()).c_str()));
 
-			//Request Connection Variables
-			ts3Functions.requestConnectionInfo(serverConnectionHandlerID, selectedClient, NULL);
-			
-			//Connected Time
-			uint64 connectedTime = 0;
-			ts3Functions.getConnectionVariableAsUInt64(serverConnectionHandlerID, selectedClient, CONNECTION_CONNECTED_TIME, &connectedTime);
-			if (connectedTime > 0) //Format
+			int type = 0;
+			ts3Functions.getClientVariableAsInt(serverConnectionHandlerID, selectedClient, ClientPropertiesRare::CLIENT_TYPE, &type);
+			if (type == ClientType::ClientType_SERVERQUERY)
 			{
-				int years = connectedTime / 1000 / 60 / 60 / 24 / 365;
-				int days = connectedTime / 1000 / 60 / 60 / 24 % 365;
-				int hours = connectedTime / 1000 / 60 / 60 % 24;
-				int minutes = connectedTime / 1000 / 60 % 60;
-				int seconds = connectedTime / 1000 % 60;
-
-				std::string connectionText = "";
-
-				if (years > 0)
-					connectionText += std::to_string(years) + "a ";
-				if (days > 0)
-					connectionText += std::to_string(days) + "d ";
-				if (hours > 0)
-					connectionText += std::to_string(hours) + "h ";
-				if (minutes > 0)
-					connectionText += std::to_string(minutes) + "m ";
-				connectionText += std::to_string(seconds) + "s";
-
-				std::string text = "Conntected since: " + connectionText;
-
-				LogiLcdColorSetText(1, _wcsdup(std::wstring(text.begin(), text.end()).c_str()));
+				LogiLcdColorSetText(1, _wcsdup(L"This is a Server Query."));
 			}
-
-			//Idle Time
-			uint64 idleTime = 0;
-			ts3Functions.getConnectionVariableAsUInt64(serverConnectionHandlerID, selectedClient, CONNECTION_IDLE_TIME, &idleTime);
-
-			if (idleTime > 0) //Format
+			else
 			{
-				int years = idleTime / 1000 / 60 / 60 / 24 / 365;
-				int days = idleTime / 1000 / 60 / 60 / 24 % 365;
-				int hours = idleTime / 1000 / 60 / 60 % 24;
-				int minutes = idleTime / 1000 / 60 % 60;
-				int seconds = idleTime / 1000 % 60;
+				LogiLcdColorSetText(7, _wcsdup(L"Press OK to refresh"));
 
-				std::string idleText = "";
+				//Request Connection Variables
+				ts3Functions.requestConnectionInfo(serverConnectionHandlerID, selectedClient, NULL);
 
-				if (years > 0)
-					idleText += std::to_string(years) + "a ";
-				if (days > 0)
-					idleText += std::to_string(days) + "d ";
-				if (hours > 0)
-					idleText += std::to_string(hours) + "h ";
-				if (minutes > 0)
-					idleText += std::to_string(minutes) + "m ";
-				idleText += std::to_string(seconds) + "s";
+				//Connected Time
+				uint64 connectedTime = 0;
+				ts3Functions.getConnectionVariableAsUInt64(serverConnectionHandlerID, selectedClient, CONNECTION_CONNECTED_TIME, &connectedTime);
+				if (connectedTime > 0) //Format
+				{
+					int years = connectedTime / 1000 / 60 / 60 / 24 / 365;
+					int days = connectedTime / 1000 / 60 / 60 / 24 % 365;
+					int hours = connectedTime / 1000 / 60 / 60 % 24;
+					int minutes = connectedTime / 1000 / 60 % 60;
+					int seconds = connectedTime / 1000 % 60;
 
-				std::string text = "Idle Time: " + idleText;
+					std::string connectionText = "";
 
-				LogiLcdColorSetText(2, _wcsdup(std::wstring(text.begin(), text.end()).c_str()));
-			}
+					if (years > 0)
+						connectionText += std::to_string(years) + "a ";
+					if (days > 0)
+						connectionText += std::to_string(days) + "d ";
+					if (hours > 0)
+						connectionText += std::to_string(hours) + "h ";
+					if (minutes > 0)
+						connectionText += std::to_string(minutes) + "m ";
+					connectionText += std::to_string(seconds) + "s";
 
-			//Ping
-			uint64 ping = 0;
-			double pingDeviation = 0;
-			ts3Functions.getConnectionVariableAsUInt64(serverConnectionHandlerID, selectedClient, CONNECTION_PING, &ping);
-			ts3Functions.getConnectionVariableAsDouble(serverConnectionHandlerID, selectedClient, CONNECTION_PING_DEVIATION, &pingDeviation);
+					std::string text = "Conntected since: " + connectionText;
 
-			if (ping > 0)
-			{
-				std::string text = "Ping: ";
+					LogiLcdColorSetText(1, _wcsdup(std::wstring(text.begin(), text.end()).c_str()));
+				}
 
-				std::ostringstream pingD;
-				pingD << ping << " +- " << std::fixed << std::setprecision(1) << pingDeviation;
-				
-				text += pingD.str();
+				//Idle Time
+				uint64 idleTime = 0;
+				ts3Functions.getConnectionVariableAsUInt64(serverConnectionHandlerID, selectedClient, CONNECTION_IDLE_TIME, &idleTime);
 
-				LogiLcdColorSetText(3, _wcsdup(std::wstring(text.begin(), text.end()).c_str()));
-			}
+				if (idleTime > 0) //Format
+				{
+					int years = idleTime / 1000 / 60 / 60 / 24 / 365;
+					int days = idleTime / 1000 / 60 / 60 / 24 % 365;
+					int hours = idleTime / 1000 / 60 / 60 % 24;
+					int minutes = idleTime / 1000 / 60 % 60;
+					int seconds = idleTime / 1000 % 60;
 
-			//IP
-			char* ip = new char[64];
-			if (ts3Functions.getConnectionVariableAsString(serverConnectionHandlerID, selectedClient, CONNECTION_CLIENT_IP, &ip) == ERROR_ok)
-			{
-				std::string text = "IP: ";
+					std::string idleText = "";
 
-				text += ip;
+					if (years > 0)
+						idleText += std::to_string(years) + "a ";
+					if (days > 0)
+						idleText += std::to_string(days) + "d ";
+					if (hours > 0)
+						idleText += std::to_string(hours) + "h ";
+					if (minutes > 0)
+						idleText += std::to_string(minutes) + "m ";
+					idleText += std::to_string(seconds) + "s";
 
-				LogiLcdColorSetText(4, _wcsdup(std::wstring(text.begin(), text.end()).c_str()));
+					std::string text = "Idle Time: " + idleText;
+
+					LogiLcdColorSetText(2, _wcsdup(std::wstring(text.begin(), text.end()).c_str()));
+				}
+
+				//Ping
+				uint64 ping = 0;
+				double pingDeviation = 0;
+				ts3Functions.getConnectionVariableAsUInt64(serverConnectionHandlerID, selectedClient, CONNECTION_PING, &ping);
+				ts3Functions.getConnectionVariableAsDouble(serverConnectionHandlerID, selectedClient, CONNECTION_PING_DEVIATION, &pingDeviation);
+
+				if (ping > 0)
+				{
+					std::string text = "Ping: ";
+
+					std::ostringstream pingD;
+					pingD << ping << " +- " << std::fixed << std::setprecision(1) << pingDeviation;
+
+					text += pingD.str();
+
+					LogiLcdColorSetText(3, _wcsdup(std::wstring(text.begin(), text.end()).c_str()));
+				}
+
+				//IP
+				char* ip = new char[64];
+				if (ts3Functions.getConnectionVariableAsString(serverConnectionHandlerID, selectedClient, CONNECTION_CLIENT_IP, &ip) == ERROR_ok)
+				{
+					std::string text = "IP: ";
+
+					text += ip;
+
+					LogiLcdColorSetText(4, _wcsdup(std::wstring(text.begin(), text.end()).c_str()));
+				}
 			}
 		}
 		break;
