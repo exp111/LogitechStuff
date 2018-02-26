@@ -155,25 +155,30 @@ void LCDScreen::ChangeChannelCursorPosition(int changeValue)
 
 void LCDScreen::SwitchChannel()
 {
+	uint64 serverConnectionHandlerID = ts3Functions.getCurrentServerConnectionHandlerID();
+	char* path = new char[512];
+	char* pw = new char[512];
 	if (hasSelected)
 	{
-		uint64 serverConnectionHandlerID = ts3Functions.getCurrentServerConnectionHandlerID();
 		uint64 channelID;
 		ts3Functions.getChannelOfClient(serverConnectionHandlerID, selectedClient, &channelID);
-		if (channelID == selectedChannel)
+		if (channelID == selectedChannel) //don't move if already in channel
 			return;
-		ts3Functions.requestClientMove(serverConnectionHandlerID, selectedClient, selectedChannel, "", NULL);
+		//get channel pw
+		ts3Functions.getChannelConnectInfo(serverConnectionHandlerID, channelID, path, pw, 512);
+		ts3Functions.requestClientMove(serverConnectionHandlerID, selectedClient, selectedChannel, pw, NULL);
 	}
 	else
 	{
-		uint64 serverConnectionHandlerID = ts3Functions.getCurrentServerConnectionHandlerID();
 		anyID mClientID;
 		uint64 mChannelID;
 		ts3Functions.getClientID(serverConnectionHandlerID, &mClientID);
 		ts3Functions.getChannelOfClient(serverConnectionHandlerID, mClientID, &mChannelID);
-		if (mChannelID == selectedChannel)
+		if (mChannelID == selectedChannel) //don't move if already in channel
 			return;
-		ts3Functions.requestClientMove(serverConnectionHandlerID, mClientID, selectedChannel, "", NULL);
+		//get channel pw
+		ts3Functions.getChannelConnectInfo(serverConnectionHandlerID, mChannelID, path, pw, 512);
+		ts3Functions.requestClientMove(serverConnectionHandlerID, mClientID, selectedChannel, pw, NULL);
 	}
 }
 
