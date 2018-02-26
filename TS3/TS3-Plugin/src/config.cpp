@@ -197,18 +197,25 @@ void LCDScreen::SelectClient()
 			break;
 		case MOVE_TO_CHANNEL:
 			currentMode = CHANNELS;
+			channelCursorPosition = 0; //Reset Cursor Position
 			Update();
 			return;
 			break;
 		case MOVE_HERE:
 		{
-			anyID clientID;
-			uint64 channelID;
+			anyID mClientID;
+			uint64 channelID, mChannelID;
 			char* path = new char[512];
 			char* password = new char[512];
-			ts3Functions.getClientID(serverConnectionHandlerID, &clientID);
-			ts3Functions.getChannelOfClient(serverConnectionHandlerID, clientID, &channelID);
-			ts3Functions.getChannelConnectInfo(serverConnectionHandlerID, channelID, path, password, 512);
+			ts3Functions.getClientID(serverConnectionHandlerID, &mClientID);
+			ts3Functions.getChannelOfClient(serverConnectionHandlerID, selectedClient, &channelID);
+			ts3Functions.getChannelOfClient(serverConnectionHandlerID, mClientID, &mChannelID);
+			
+			if (channelID == mChannelID) //don't move if same channel
+				return;
+			//get pw of my channel
+			ts3Functions.getChannelConnectInfo(serverConnectionHandlerID, mChannelID, path, password, 512); 
+
 			ts3Functions.requestClientMove(serverConnectionHandlerID, selectedClient, channelID, password, NULL);
 			break;
 		}
