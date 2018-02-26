@@ -965,7 +965,7 @@ void LCDScreen::Update()
 						connectionText += std::to_string(minutes) + "m ";
 					connectionText += std::to_string(seconds) + "s";
 
-					std::string text = "Conntected since: " + connectionText;
+					std::string text = "Connected since: " + connectionText;
 
 					LogiLcdColorSetText(1, _wcsdup(std::wstring(text.begin(), text.end()).c_str()));
 				}
