@@ -22,6 +22,8 @@
 #include "plugin.h"
 #include <iostream>
 #include <string>
+#include <iterator>
+#include <fstream>
 //#include "config.h"
 #include "QtConfig.h"
 #include "config.h"
@@ -49,6 +51,7 @@ static struct TS3Functions ts3Functions;
 
 //Global Variables
 static char* pluginID = NULL;
+std::string configFile;
 
 #ifdef _WIN32
 /* Helper function to convert wchar_T to Utf-8 encoded strings on Windows */
@@ -102,6 +105,36 @@ void ts3plugin_setFunctionPointers(const struct TS3Functions funcs) {
 	screen->SetTS3Functions(funcs);
 }
 
+bool file_exists(LPCSTR file_name)
+{
+	std::ifstream file(file_name);
+	return file.good();
+}
+
+void LoadConfig()
+{
+	if (!file_exists(configFile.c_str()))
+		return;
+
+	std::ifstream config(configFile.c_str());
+
+	std::string line;
+	while (std::getline(config, line))
+	{
+		screen->sendItems.push_back(line);
+	}
+}
+
+void SaveConfig()
+{
+	std::ofstream line(configFile.c_str());
+
+	for (int i = 0; i < screen->sendItems.size(); i++)
+	{
+		line << screen->sendItems[i] << std::endl;
+	}
+}
+
 int ts3plugin_init() {
 	char appPath[PATH_BUFSIZE];
 	char resourcesPath[PATH_BUFSIZE];
@@ -113,12 +146,15 @@ int ts3plugin_init() {
 	ts3Functions.getConfigPath(configPath, PATH_BUFSIZE);
 	ts3Functions.getPluginPath(pluginPath, PATH_BUFSIZE, pluginID);
 
+	configFile = std::string(configPath) + "plugins/LogitechG19Plugin/config.ini";
 	screen->Init();
+	LoadConfig();
 
 	return 0;
 }
 
 void ts3plugin_shutdown() {
+	SaveConfig();
 	screen->Shutdown();
 	if (pluginID) {
 		free(pluginID);
