@@ -60,8 +60,9 @@ void QtConfig::save()
 	{
 		if (i >= screen->sendItems.size())
 		{
-			screen->sendItems.push_back(inputLines[i]->text().toStdString());
+			screen->sendItems.push_back("");
 		}
+		screen->sendItems[i] = inputLines[i]->text().toStdString();
 	}
 
 	for (int i = inputLines.size() - 1; i >= 0 ; i--)

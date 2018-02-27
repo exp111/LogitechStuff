@@ -1089,11 +1089,16 @@ void LCDScreen::Update()
 	{
 		LogiLcdColorSetTitle(_wcsdup(L"Send Channel Message"), red, green, blue);
 
+		for (unsigned i = 0; i < 8; i++) //Empty the other lines
+		{
+			LogiLcdColorSetText(i, _wcsdup(L""));
+		}
+
 		unsigned count = sendItems.size();
 		unsigned clientCount = 0; //as we can't print at i we need a seperate counter
 		unsigned start = ((int)sendCursorPosition) - 3 < 0 ? 0 : sendCursorPosition + 5 > count ? ((int)count) - 8 < 0 ? 0 : count - 8 : sendCursorPosition - 3; //so we don't go under 0 and don't go to far
 		unsigned end = sendCursorPosition + 5 > count ? count : sendCursorPosition + 5 < 8 ? 8 : sendCursorPosition + 5; //don't go over the limit and don't stay to small
-		for (unsigned i = start; i < end; i++)
+		for (unsigned i = start; i < end && i < count; i++)
 		{
 			bool active = sendCursorPosition == i;
 			int red = active ? 255 : 255;
@@ -1104,10 +1109,6 @@ void LCDScreen::Update()
 			clientCount++;
 		}
 
-		for (unsigned i = sendItems.size(); i < 8; i++) //Empty the other lines
-		{
-			LogiLcdColorSetText(i, _wcsdup(L""));
-		}
 		break;
 	}
 	case HELP:
