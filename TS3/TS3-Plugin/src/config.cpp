@@ -102,6 +102,11 @@ void LCDScreen::SelectActiveItem()
 		currentMode = CLIENT_INFO;
 		Update();
 		break;
+	case SEND_CHANNEL:
+		sendCursorPosition = 0;
+		currentMode = SEND_CHANNEL;
+		Update();
+		break;
 	case HELP:
 		currentMode = HELP;
 		Update();
@@ -298,6 +303,34 @@ void LCDScreen::ChangeAdminMenuCursorPosition(int changeValue)
 	Update();
 }
 
+void LCDScreen::SendChannelMessage()
+{
+	uint64 serverConnectionHandlerID;
+	serverConnectionHandlerID = ts3Functions.getCurrentServerConnectionHandlerID();
+	anyID mClientID;
+	uint64 mChannelID;
+	ts3Functions.getClientID(serverConnectionHandlerID, &mClientID);
+	ts3Functions.getChannelOfClient(serverConnectionHandlerID, mClientID, &mChannelID);
+
+	ts3Functions.requestSendChannelTextMsg(serverConnectionHandlerID, sendItems[sendCursorPosition].c_str(), mChannelID, NULL);
+}
+
+void LCDScreen::ChangeSendCursorPosition(int changeValue)
+{
+	int changed = sendCursorPosition + changeValue;
+
+	if (changed < 0)
+		changed += sendItems.size();
+
+	if (changed >= sendItems.size()) //if we hit the limit go back to first
+		changed -= sendItems.size();
+
+	sendCursorPosition = changed;
+
+	//Refresh
+	Update();
+}
+
 void LCDScreen::ChangeHelpSite(int changeValue)
 {
 	int changed = helpSite + changeValue;
@@ -370,6 +403,9 @@ void LCDScreen::ButtonUpEvent()
 		if (!hasSelected)
 			ChangeClientCursorPosition(-1);
 		break;
+	case SEND_CHANNEL:
+		ChangeSendCursorPosition(-1);
+		break;
 	default:
 		break;
 	}
@@ -401,6 +437,9 @@ void LCDScreen::ButtonDownEvent()
 	case CLIENT_INFO:
 		if (!hasSelected)
 			ChangeClientCursorPosition(1);
+		break;
+	case SEND_CHANNEL:
+		ChangeSendCursorPosition(1);
 		break;
 	default:
 		break;
@@ -470,6 +509,9 @@ void LCDScreen::ButtonOKEvent()
 			adminMenuCursorPosition = 0;
 		}
 		Update();
+		break;
+	case SEND_CHANNEL:
+		SendChannelMessage();
 		break;
 	default:
 		break;
@@ -1040,6 +1082,31 @@ void LCDScreen::Update()
 					LogiLcdColorSetText(4, _wcsdup(std::wstring(text.begin(), text.end()).c_str()));
 				}
 			}
+		}
+		break;
+	}
+	case SEND_CHANNEL:
+	{
+		LogiLcdColorSetTitle(_wcsdup(L"Send Channel Message"), red, green, blue);
+
+		unsigned count = sendItems.size();
+		unsigned clientCount = 0; //as we can't print at i we need a seperate counter
+		unsigned start = ((int)sendCursorPosition) - 3 < 0 ? 0 : sendCursorPosition + 5 > count ? ((int)count) - 8 < 0 ? 0 : count - 8 : sendCursorPosition - 3; //so we don't go under 0 and don't go to far
+		unsigned end = sendCursorPosition + 5 > count ? count : sendCursorPosition + 5 < 8 ? 8 : sendCursorPosition + 5; //don't go over the limit and don't stay to small
+		for (unsigned i = start; i < end; i++)
+		{
+			bool active = sendCursorPosition == i;
+			int red = active ? 255 : 255;
+			int green = active ? 255 : 255;
+			int blue = active ? 0 : 255;
+
+			LogiLcdColorSetText(clientCount, _wcsdup(std::wstring(sendItems[i].begin(), sendItems[i].end()).c_str()), red, green, blue);
+			clientCount++;
+		}
+
+		for (unsigned i = sendItems.size(); i < 8; i++) //Empty the other lines
+		{
+			LogiLcdColorSetText(i, _wcsdup(L""));
 		}
 		break;
 	}

@@ -6,20 +6,20 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>284</width>
-    <height>132</height>
+    <width>280</width>
+    <height>114</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Test Plugin</string>
+   <string>Logitech G19 Plugin</string>
   </property>
   <widget class="QPushButton" name="closeButton">
    <property name="geometry">
     <rect>
-     <x>90</x>
-     <y>100</y>
-     <width>101</width>
-     <height>23</height>
+     <x>80</x>
+     <y>80</y>
+     <width>100</width>
+     <height>25</height>
     </rect>
    </property>
    <property name="text">
@@ -63,6 +63,19 @@
    </property>
    <property name="text">
     <string>Manual Init/Shutdown</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="addButton">
+   <property name="geometry">
+    <rect>
+     <x>245</x>
+     <y>80</y>
+     <width>25</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>+</string>
    </property>
   </widget>
  </widget>
@@ -117,9 +130,43 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>addButton</sender>
+   <signal>clicked()</signal>
+   <receiver>QtConfig</receiver>
+   <slot>addPreset()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>257</x>
+     <y>122</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>139</x>
+     <y>73</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>closeButton</sender>
+   <signal>clicked()</signal>
+   <receiver>QtConfig</receiver>
+   <slot>save()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>129</x>
+     <y>122</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>139</x>
+     <y>73</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>Shutdown()</slot>
   <slot>Init()</slot>
+  <slot>addPreset()</slot>
+  <slot>save()</slot>
  </slots>
 </ui>

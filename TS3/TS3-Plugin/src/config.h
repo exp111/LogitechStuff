@@ -36,6 +36,10 @@ private:
 	int currentMode = NORMAL;
 	int lastMode = NORMAL;
 
+	unsigned sendCursorPosition = 0;
+public:
+	std::vector<std::string> sendItems = {  };
+private:
 	enum MENU_ITEMS
 	{
 		MUTE_INPUT = 0,
@@ -43,10 +47,11 @@ private:
 		SWITCH_CHANNEL,
 		ADMIN_MENU,
 		CLIENT_INFO,
+		SEND_CHANNEL,
 		HELP,
 		MAX_MENU_ITEMS
 	};
-	const std::vector<std::string> menuItems = { "Mute Input", "Mute Output", "Switch Channel", "Admin Menu", "Client Info", "Help" };
+	const std::vector<std::string> menuItems = { "Mute Input", "Mute Output", "Switch Channel", "Admin Menu", "Client Info", "Send Channel Messages","Help" };
 	unsigned menuCursorPosition = 0;
 
 	uint64 selectedChannel = 0;
@@ -113,6 +118,10 @@ public:
 	void SelectClient();
 	void ChangeClientCursorPosition(int changeValue);
 	void ChangeAdminMenuCursorPosition(int changeValue);
+
+	//Send Channel
+	void SendChannelMessage();
+	void ChangeSendCursorPosition(int changeValue);
 
 	//Help
 	void ChangeHelpSite(int changeValue);

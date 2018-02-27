@@ -27,15 +27,16 @@ public:
     QPushButton *initButton;
     QPushButton *shutdownButton;
     QLabel *label;
+    QPushButton *addButton;
 
     void setupUi(QWidget *QtConfig)
     {
         if (QtConfig->objectName().isEmpty())
             QtConfig->setObjectName(QStringLiteral("QtConfig"));
-        QtConfig->resize(284, 132);
+        QtConfig->resize(280, 114);
         closeButton = new QPushButton(QtConfig);
         closeButton->setObjectName(QStringLiteral("closeButton"));
-        closeButton->setGeometry(QRect(90, 100, 101, 23));
+        closeButton->setGeometry(QRect(80, 80, 100, 25));
         initButton = new QPushButton(QtConfig);
         initButton->setObjectName(QStringLiteral("initButton"));
         initButton->setGeometry(QRect(30, 40, 101, 23));
@@ -45,22 +46,28 @@ public:
         label = new QLabel(QtConfig);
         label->setObjectName(QStringLiteral("label"));
         label->setGeometry(QRect(70, 10, 181, 21));
+        addButton = new QPushButton(QtConfig);
+        addButton->setObjectName(QStringLiteral("addButton"));
+        addButton->setGeometry(QRect(245, 80, 25, 25));
 
         retranslateUi(QtConfig);
         QObject::connect(closeButton, SIGNAL(clicked()), QtConfig, SLOT(close()));
         QObject::connect(initButton, SIGNAL(clicked()), QtConfig, SLOT(Init()));
         QObject::connect(shutdownButton, SIGNAL(clicked()), QtConfig, SLOT(Shutdown()));
+        QObject::connect(addButton, SIGNAL(clicked()), QtConfig, SLOT(addPreset()));
+        QObject::connect(closeButton, SIGNAL(clicked()), QtConfig, SLOT(save()));
 
         QMetaObject::connectSlotsByName(QtConfig);
     } // setupUi
 
     void retranslateUi(QWidget *QtConfig)
     {
-        QtConfig->setWindowTitle(QApplication::translate("QtConfig", "Test Plugin", Q_NULLPTR));
+        QtConfig->setWindowTitle(QApplication::translate("QtConfig", "Logitech G19 Plugin", Q_NULLPTR));
         closeButton->setText(QApplication::translate("QtConfig", "Close", Q_NULLPTR));
         initButton->setText(QApplication::translate("QtConfig", "Init", Q_NULLPTR));
         shutdownButton->setText(QApplication::translate("QtConfig", "Shutdown", Q_NULLPTR));
         label->setText(QApplication::translate("QtConfig", "Manual Init/Shutdown", Q_NULLPTR));
+        addButton->setText(QApplication::translate("QtConfig", "+", Q_NULLPTR));
     } // retranslateUi
 
 };
