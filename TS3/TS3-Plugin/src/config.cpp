@@ -671,12 +671,18 @@ void LCDScreen::Update()
 		{
 			unsigned channelClientCount = channelClientList.size();
 			int serverClientCount = 0;
-			anyID* clientList;
-			if (ts3Functions.getClientList(serverConnectionHandlerID, &clientList) == ERROR_ok)
+			ts3Functions.getServerVariableAsInt(serverConnectionHandlerID, VIRTUALSERVER_CLIENTS_ONLINE, &serverClientCount);
+			if (serverClientCount <= 0)
 			{
-				for (int i = 0; clientList[i]; i++)
+				ts3Functions.requestServerVariables(serverConnectionHandlerID);
+				serverClientCount = 0;
+				anyID* clientList;
+				if (ts3Functions.getClientList(serverConnectionHandlerID, &clientList) == ERROR_ok)
 				{
-					serverClientCount++;
+					for (int i = 0; clientList[i]; i++)
+					{
+						serverClientCount++;
+					}
 				}
 			}
 			//ts3Functions.requestServerVariables(serverConnectionHandlerID); //we need to request for client count
