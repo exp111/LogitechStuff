@@ -86,6 +86,8 @@ private:
 	bool hasSelected = false;
 	unsigned adminMenuCursorPosition = 0;
 
+	const unsigned refreshRate = 50;
+
 public:
 	LCDScreen() {};
 	~LCDScreen()

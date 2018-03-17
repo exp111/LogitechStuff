@@ -650,6 +650,14 @@ void LCDScreen::Update()
 	int green = talking ? 0 : outputMuted ? 160 : inputMuted ? 0 : 255;
 	int blue = talking ? 0 : outputMuted ? 160 : inputMuted ? 204 : 255;
 
+	static unsigned tickCount = refreshRate; //Force to refresh on first tick
+	tickCount++;
+
+	bool connected = true;
+	if (tickCount > refreshRate)
+		if (ts3Functions.requestServerVariables(serverConnectionHandlerID) == ERROR_not_connected)
+			connected = false;
+
 	switch (currentMode)
 	{
 	case NORMAL:
@@ -672,7 +680,7 @@ void LCDScreen::Update()
 			unsigned channelClientCount = channelClientList.size();
 			int serverClientCount = 0;
 			ts3Functions.getServerVariableAsInt(serverConnectionHandlerID, VIRTUALSERVER_CLIENTS_ONLINE, &serverClientCount);
-			if (serverClientCount <= 0)
+			if (serverClientCount <= 0) //backup thingy
 			{
 				ts3Functions.requestServerVariables(serverConnectionHandlerID);
 				serverClientCount = 0;
@@ -701,7 +709,6 @@ void LCDScreen::Update()
 		}
 		else
 		{
-			bool connected = true;
 			char* serverName = new char[128];
 			char* channelName = new char[128];
 			if (ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_NAME, &serverName) == ERROR_not_connected)
