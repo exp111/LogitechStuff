@@ -350,6 +350,7 @@ DWORD WINAPI ControlThread(void * data)
 {
 	while (screen->IsActive())
 	{
+		static int i = 0;
 		if (LogiLcdIsButtonPressed(LOGI_LCD_COLOR_BUTTON_UP))
 			screen->ButtonUpEvent();
 		else if (LogiLcdIsButtonPressed(LOGI_LCD_COLOR_BUTTON_DOWN))
@@ -366,6 +367,12 @@ DWORD WINAPI ControlThread(void * data)
 			screen->ButtonCancelEvent();
 
 		Sleep(150);
+		i++;
+		if (i >= 10)
+		{
+			screen->Update();
+			i = 0;
+		}
 	}
 
 	return 0;
