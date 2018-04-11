@@ -368,7 +368,7 @@ DWORD WINAPI ControlThread(void * data)
 
 		Sleep(150);
 		i++;
-		if (i >= 10)
+		if (i >= 100)
 		{
 			screen->Update();
 			i = 0;
