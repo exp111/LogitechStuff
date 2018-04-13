@@ -161,14 +161,18 @@ void LCDScreen::ChangeChannelCursorPosition(int changeValue)
 void LCDScreen::SwitchChannel()
 {
 	uint64 serverConnectionHandlerID = ts3Functions.getCurrentServerConnectionHandlerID();
-	char* path = new char[512];
-	char* pw = new char[512];
+	char* path;
+	char* pw;
 	if (hasSelected)
 	{
 		uint64 channelID;
 		ts3Functions.getChannelOfClient(serverConnectionHandlerID, selectedClient, &channelID);
 		if (channelID == selectedChannel) //don't move if already in channel
 			return;
+
+		path = new char[512];
+		pw = new char[512];
+
 		//get channel pw
 		ts3Functions.getChannelConnectInfo(serverConnectionHandlerID, channelID, path, pw, 512);
 		ts3Functions.requestClientMove(serverConnectionHandlerID, selectedClient, selectedChannel, pw, NULL);
@@ -181,10 +185,17 @@ void LCDScreen::SwitchChannel()
 		ts3Functions.getChannelOfClient(serverConnectionHandlerID, mClientID, &mChannelID);
 		if (mChannelID == selectedChannel) //don't move if already in channel
 			return;
+
+		path = new char[512];
+		pw = new char[512];
 		//get channel pw
 		ts3Functions.getChannelConnectInfo(serverConnectionHandlerID, mChannelID, path, pw, 512);
 		ts3Functions.requestClientMove(serverConnectionHandlerID, mClientID, selectedChannel, pw, NULL);
 	}
+
+	//Free Memory
+	ts3Functions.freeMemory(path);
+	ts3Functions.freeMemory(pw);
 }
 
 void LCDScreen::SelectClient()
@@ -215,18 +226,24 @@ void LCDScreen::SelectClient()
 		{
 			anyID mClientID;
 			uint64 channelID, mChannelID;
-			char* path = new char[512];
-			char* password = new char[512];
 			ts3Functions.getClientID(serverConnectionHandlerID, &mClientID);
 			ts3Functions.getChannelOfClient(serverConnectionHandlerID, selectedClient, &channelID);
 			ts3Functions.getChannelOfClient(serverConnectionHandlerID, mClientID, &mChannelID);
 			
 			if (channelID == mChannelID) //don't move if same channel
 				return;
+
+			char* path = new char[512];
+			char* password = new char[512];
+
 			//get pw of my channel
 			ts3Functions.getChannelConnectInfo(serverConnectionHandlerID, mChannelID, path, password, 512); 
 
 			ts3Functions.requestClientMove(serverConnectionHandlerID, selectedClient, channelID, password, NULL);
+			
+			//Free Memory
+			ts3Functions.freeMemory(path);
+			ts3Functions.freeMemory(password);
 			break;
 		}
 		case BAN_TEMP:
@@ -727,6 +744,10 @@ void LCDScreen::Update()
 				sServerName.resize(13);
 			std::string sChannelName{ channelName };
 			fLineText += connected ? sServerName + " - " + sChannelName : "Not Connected.";
+
+			//Free Memory
+			ts3Functions.freeMemory(serverName);
+			ts3Functions.freeMemory(channelName);
 		}
 		LogiLcdColorSetText(0, _wcsdup(std::wstring(fLineText.begin(), fLineText.end()).c_str()));
 
@@ -774,6 +795,9 @@ void LCDScreen::Update()
 			//std::string status = inputMuted && outputMuted ? "<IO> " : inputMuted ? "<I> " : outputMuted ? "<O> " : "";
 			std::string text = std::string(clientName);
 			LogiLcdColorSetText(i + 1 - cursorPosition, _wcsdup(std::wstring(text.begin(), text.end()).c_str()), red, green, blue);
+		
+			//Free Memory
+			ts3Functions.freeMemory(clientName);
 		}
 
 		for (unsigned i = channelClientList.size(); i < 7; i++) //Empty the other lines
@@ -815,6 +839,9 @@ void LCDScreen::Update()
 			ts3Functions.getClientVariableAsString(serverConnectionHandlerID, selectedClient, CLIENT_NICKNAME, &clientName);
 			text += std::string(clientName) + " (" + std::to_string(selectedClient) + ")";
 			LogiLcdColorSetTitle(_wcsdup(std::wstring(text.begin(), text.end()).c_str()), red, green, blue);
+			
+			//Free Memory
+			ts3Functions.freeMemory(clientName);
 		}
 
 		anyID clientID = 0;
@@ -854,6 +881,9 @@ void LCDScreen::Update()
 				text += " (" + std::to_string(channelList[i]) + ")";
 				LogiLcdColorSetText(channelCount, _wcsdup(std::wstring(text.begin(), text.end()).c_str()), red, green, blue);
 				channelCount++;
+
+				//Free Memory
+				ts3Functions.freeMemory(channelName);
 			}
 		}
 
@@ -903,6 +933,9 @@ void LCDScreen::Update()
 					std::string text = std::string(clientName) + " (" + std::to_string(clientList[i]) + ")";
 					LogiLcdColorSetText(clientCount, _wcsdup(std::wstring(text.begin(), text.end()).c_str()), red, green, blue);
 					clientCount++;
+
+					//Free Memory
+					ts3Functions.freeMemory(clientName);
 				}
 			}
 
@@ -943,6 +976,9 @@ void LCDScreen::Update()
 			{
 				LogiLcdColorSetText(i + 1, _wcsdup(L""));
 			}
+
+			//Free Memory
+			ts3Functions.freeMemory(clientName);
 		}
 		break;
 	}
@@ -986,6 +1022,9 @@ void LCDScreen::Update()
 					std::string text = std::string(clientName) + " (" + std::to_string(clientList[i]) + ")";
 					LogiLcdColorSetText(clientCount, _wcsdup(std::wstring(text.begin(), text.end()).c_str()), red, green, blue);
 					clientCount++;
+
+					//Free Memory
+					ts3Functions.freeMemory(clientName);
 				}
 			}
 
@@ -1105,7 +1144,13 @@ void LCDScreen::Update()
 
 					LogiLcdColorSetText(4, _wcsdup(std::wstring(text.begin(), text.end()).c_str()));
 				}
+
+				//Free Memory
+				ts3Functions.freeMemory(ip);
 			}
+
+			//Free Memory
+			ts3Functions.freeMemory(clientName);
 		}
 		break;
 	}
