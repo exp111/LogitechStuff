@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'QtConfig.ui'
 **
-** Created by: Qt User Interface Compiler version 5.9.3
+** Created by: Qt User Interface Compiler version 5.10.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -62,12 +62,12 @@ public:
 
     void retranslateUi(QWidget *QtConfig)
     {
-        QtConfig->setWindowTitle(QApplication::translate("QtConfig", "Logitech G19 Plugin", Q_NULLPTR));
-        closeButton->setText(QApplication::translate("QtConfig", "Close", Q_NULLPTR));
-        initButton->setText(QApplication::translate("QtConfig", "Init", Q_NULLPTR));
-        shutdownButton->setText(QApplication::translate("QtConfig", "Shutdown", Q_NULLPTR));
-        label->setText(QApplication::translate("QtConfig", "Manual Init/Shutdown", Q_NULLPTR));
-        addButton->setText(QApplication::translate("QtConfig", "+", Q_NULLPTR));
+        QtConfig->setWindowTitle(QApplication::translate("QtConfig", "Logitech G19 Plugin", nullptr));
+        closeButton->setText(QApplication::translate("QtConfig", "Close", nullptr));
+        initButton->setText(QApplication::translate("QtConfig", "Init", nullptr));
+        shutdownButton->setText(QApplication::translate("QtConfig", "Shutdown", nullptr));
+        label->setText(QApplication::translate("QtConfig", "Manual Init/Shutdown", nullptr));
+        addButton->setText(QApplication::translate("QtConfig", "+", nullptr));
     } // retranslateUi
 
 };
